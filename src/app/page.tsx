@@ -66,9 +66,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 flex items-center justify-center"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              "Login"
+            )}
           </button>
         </form>
       </div>

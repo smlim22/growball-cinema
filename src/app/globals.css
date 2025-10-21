@@ -8,6 +8,8 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-signature-red: #691716;
+  --color-signature-red-hover: #3f0c0b;
 }
 
 body {
