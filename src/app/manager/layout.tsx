@@ -1,4 +1,5 @@
 'use client';
+import "@radix-ui/themes/styles.css";
 import Sidebar from "../components/sidebar";
 import {
   Menu,
@@ -56,7 +57,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     { href: "/manager/schedule", label: "Schedule", icon: <Calendar /> },
     { href: "/manager/staff", label: "Staff Management", icon: <UserRound /> },
     { href: "/manager/fnb", label: "F&B Management", icon: <Utensils /> },
-    { href: "/manager/feedback", label: "Feedback & Complaints", icon: <MessageSquareText /> },
+    { href: "/manager/feedback", label: "Feedback & Complaints Management", icon: <MessageSquareText /> },
   ];
 
   return (

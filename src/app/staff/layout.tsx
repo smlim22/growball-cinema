@@ -1,4 +1,5 @@
 'use client';
+import "@radix-ui/themes/styles.css";
 import Sidebar from "../components/sidebar";
 import { Menu, X, House, Banknote, Utensils } from "lucide-react";
 import { logout } from "../lib/auth";
