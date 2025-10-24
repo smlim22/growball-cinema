@@ -3,6 +3,7 @@ import { Theme, Button, Flex } from '@radix-ui/themes';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { PlusIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
 
 type Movie = {
   id: string;
@@ -15,6 +16,7 @@ type Movie = {
 export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   function formatDuration(minutes: number | string) {
     const totalMinutes = typeof minutes === "string" ? parseInt(minutes, 10) : minutes;
@@ -46,8 +48,11 @@ export default function MoviesPage() {
     <div className="py-10 px-12">
       <Theme className="inline">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Movies Management</h1>
-          <Button color="green" size="2" variant="solid">
+          <h1 className="text-2xl font-bold font-inter">Movies Management</h1>
+          <Button color="green" size="2" variant="solid" type="submit" 
+            onClick={() => {
+              router.push('/manager/add-movie');
+            }}>
             <PlusIcon />
             Add Movie
           </Button>
