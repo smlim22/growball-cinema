@@ -40,7 +40,7 @@ export default function MoviesPage() {
       {loading ? (
         <p>Loading movies...</p>
       ) : (
-        <Theme className="inline">
+        
         <table className="min-w-full bg-white shadow-md rounded-lg border-collapse border overflow-hidden font-inter">
           <thead className="bg-signature-red text-white">
             <tr>
@@ -62,11 +62,13 @@ export default function MoviesPage() {
                   <td className="py-3 px-6">{movie.duration}</td>
                   <td className="py-3 px-6">{movie.age_rating}</td>
                   <td className="py-3 px-6">
+                  <Theme className="inline">
                     <Flex gap="1">
                         <Button color="green" size="2" variant="solid">
                             View
                         </Button>
                     </Flex>
+                  </Theme>
                   </td>
                 </tr>
               ))
@@ -79,7 +81,6 @@ export default function MoviesPage() {
             )}
           </tbody>
         </table>
-        </Theme>
       )}
     </div>
   );
