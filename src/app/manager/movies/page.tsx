@@ -1,9 +1,9 @@
 'use client';
-import { Theme, Button, Flex } from '@radix-ui/themes';
+import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
-import { PlusIcon } from "@radix-ui/react-icons";
-import { useRouter } from "next/navigation";
+import { PlusIcon, CheckCircledIcon } from "@radix-ui/react-icons";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Movie = {
   id: string;
@@ -17,6 +17,8 @@ export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const success = searchParams.get('success');
 
   function formatDuration(minutes: number | string) {
     const totalMinutes = typeof minutes === "string" ? parseInt(minutes, 10) : minutes;
@@ -51,12 +53,20 @@ export default function MoviesPage() {
           <h1 className="text-2xl font-bold font-inter">Movies Management</h1>
           <Button color="green" size="2" variant="solid" type="submit" 
             onClick={() => {
-              router.push('/manager/add-movie');
+              router.push('/manager/movies/add-movie');
             }}>
             <PlusIcon />
             Add Movie
           </Button>
         </div>
+        {success && (
+          <Callout.Root color="green" className="font-inter mb-4">
+            <Callout.Icon>
+              <CheckCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>Movie added successfully!</Callout.Text>
+          </Callout.Root>
+        )}
       </Theme>
 
       {loading ? (
