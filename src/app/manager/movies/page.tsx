@@ -60,7 +60,7 @@ export default function MoviesPage() {
           </Button>
         </div>
         {success && (
-          <Callout.Root color="green" className="font-inter mb-4">
+          <Callout.Root color="green" size="2" variant='soft' className="font-inter mb-4">
             <Callout.Icon>
               <CheckCircledIcon />
             </Callout.Icon>
