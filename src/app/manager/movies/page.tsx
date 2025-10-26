@@ -6,7 +6,7 @@ import { PlusIcon, CheckCircledIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Movie = {
-  id: string;
+  movie_id: number;
   movie_name: string;
   year: number;
   duration: string;
@@ -87,7 +87,7 @@ export default function MoviesPage() {
             <tbody>
               {movies.length > 0 ? (
                 movies.map((movie, index) => (
-                  <tr key={movie.id || index} className="border-t border-gray-200">
+                  <tr key={movie.movie_id || index} className="border-t border-gray-200">
                     <td className="py-3 px-6">{index + 1}</td>
                     <td className="py-3 px-6">{movie.movie_name}</td>
                     <td className="py-3 px-6">{movie.year}</td>
@@ -95,9 +95,14 @@ export default function MoviesPage() {
                     <td className="py-3 px-6">{movie.age_rating}</td>
                     <td className="py-3 px-6">
                       <Flex gap="1">
-                          <Button color="blue" size="2" variant="solid">
-                              View
-                          </Button>
+                        <Button
+                          color="blue"
+                          size="2"
+                          variant="solid"
+                          onClick={() => router.push(`/manager/movies/${movie.movie_id}`)}
+                        >
+                          View
+                        </Button>
                       </Flex>
                     </td>
                   </tr>

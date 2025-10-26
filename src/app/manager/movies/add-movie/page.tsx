@@ -61,8 +61,8 @@ export default function AddMoviePage() {
 
     return (
         <div className="py-10 px-12">
-            <h1 className="text-2xl font-bold font-inter">Add Movie</h1>
-            <div className="mt-4 bg-white p-6 rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold font-inter mb-4">Add Movie</h1>
+            <div className="bg-white p-6 rounded-lg shadow-md">
                 <a href="/manager/movies" className="text-black hover:underline mb-4 flex gap-1 items-center">
                     <ArrowLeftIcon/>
                     Back
