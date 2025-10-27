@@ -2,7 +2,7 @@
 import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
-import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
+import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Movie = {
@@ -19,6 +19,7 @@ export default function MoviesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
+  const deleted = searchParams.get('deleted');
 
   function formatDuration(minutes: number | string) {
     const totalMinutes = typeof minutes === "string" ? parseInt(minutes, 10) : minutes;
@@ -65,6 +66,14 @@ export default function MoviesPage() {
               <CheckCircledIcon />
             </Callout.Icon>
             <Callout.Text>Movie added successfully!</Callout.Text>
+          </Callout.Root>
+        )}
+        {deleted && (
+          <Callout.Root color="red" size="2" variant="soft" className="font-inter mb-4">
+            <Callout.Icon>
+              <TrashIcon />
+            </Callout.Icon>
+            <Callout.Text>Movie deleted successfully.</Callout.Text>
           </Callout.Root>
         )}
       </Theme>

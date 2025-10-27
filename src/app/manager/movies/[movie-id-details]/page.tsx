@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
-import { Theme, Button, Callout } from "@radix-ui/themes";
+import { Theme, Button, Callout, AlertDialog, Flex } from "@radix-ui/themes";
 import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
 
 type Movie = {
@@ -21,9 +21,10 @@ export default function MovieDetailsPage() {
   const movieId = params['movie-id-details'];
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  // Helper to format movie duration
+  // Helper to format duration
   function formatDuration(minutes: number | string) {
     const totalMinutes = typeof minutes === "string" ? parseInt(minutes, 10) : minutes;
     if (isNaN(totalMinutes)) return "-";
@@ -32,15 +33,14 @@ export default function MovieDetailsPage() {
     return `${hours}h ${remainingMinutes}m`;
   }
 
+  // Fetch movie details
   useEffect(() => {
     const fetchMovie = async () => {
       if (!movieId) {
-        console.warn("No movie ID in params:", params);
+        console.warn("No movie ID found in params:", params);
         setLoading(false);
         return;
       }
-
-      console.log("Fetching movie ID:", movieId);
 
       const { data, error } = await supabase
         .from("movie")
@@ -59,6 +59,24 @@ export default function MovieDetailsPage() {
     fetchMovie();
   }, [movieId]);
 
+  // Handle movie deletion
+  const handleDelete = async () => {
+    if (!movieId) return;
+
+    const { error } = await supabase
+      .from("movie")
+      .delete()
+      .eq("movie_id", Number(movieId));
+
+    if (error) {
+      console.error("Error deleting movie:", error);
+      alert("Failed to delete movie. Please try again.");
+    } else {
+      setOpen(false);
+      router.push("/manager/movies?deleted=true");
+    }
+  };
+
   // Loading state
   if (loading) return <p className="px-12 py-10">Loading...</p>;
 
@@ -71,16 +89,16 @@ export default function MovieDetailsPage() {
     );
   }
 
-  // Movie found
+  // Render movie details
   return (
     <div className="py-10 px-12 font-inter">
       <h1 className="text-2xl font-bold mb-4">Movie Details</h1>
-      
+
       <div className="bg-white p-6 rounded-lg shadow-md space-y-3">
         <a
           href="/manager/movies"
           className="text-black hover:underline flex gap-1 items-center"
-          >
+        >
           <ArrowLeftIcon />
           Back
         </a>
@@ -123,15 +141,32 @@ export default function MovieDetailsPage() {
         </table>
 
         <Theme className="inline">
-          <Button
-            color="red"
-            variant="solid"
-            //   onClick={() => router.push(`/manager/movies/${movie.movie_id}/edit`)}
-            >
-            <TrashIcon />
-            Delete Movie
-          </Button>
-        </Theme> 
+          <AlertDialog.Root open={open} onOpenChange={setOpen}>
+            <AlertDialog.Trigger>
+              <Button color="red" variant="solid" className="font-inter">
+                <TrashIcon />
+                Delete Movie
+              </Button>
+            </AlertDialog.Trigger>
+
+            <AlertDialog.Content>
+              <AlertDialog.Title className="font-inter">Confirm Deletion</AlertDialog.Title>
+              <AlertDialog.Description className="font-inter">
+                Are you sure you want to delete the movie <strong>{movie.movie_name}</strong>?  
+                This action cannot be undone.
+              </AlertDialog.Description>
+
+              <Flex gap="3" mt="4" justify="end">
+                <AlertDialog.Cancel>
+                  <Button variant="soft" color="gray">Cancel</Button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action>
+                  <Button color="red" onClick={handleDelete}>Delete</Button>
+                </AlertDialog.Action>
+              </Flex>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+        </Theme>
       </div>
     </div>
   );
