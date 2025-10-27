@@ -44,7 +44,7 @@ export default function MoviesPage() {
   // 🧠 Fetch movies
   useEffect(() => {
     const fetchMovies = async () => {
-      const { data, error } = await supabase.from("movie").select("*");
+      const { data, error } = await supabase.from("movie").select("*").order("movie_name", {ascending: true});
 
       if (error) {
         console.error("Error fetching movies:", error);
@@ -130,7 +130,7 @@ export default function MoviesPage() {
 
       {/* 🔍 Search + Filters */}
       <Theme className='inline'>
-        <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-6 gap-3">
+        <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3">
           <div className="relative flex-1 min-w-[220px]">
             <MagnifyingGlassIcon className="absolute left-3 top-3 text-gray-500" />
             <input
