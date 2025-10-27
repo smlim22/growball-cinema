@@ -2,7 +2,7 @@
 import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
-import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon, TrashIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Movie = {
@@ -16,12 +16,22 @@ type Movie = {
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedYear, setSelectedYear] = useState("All");
+  const [selectedGenre, setSelectedGenre] = useState("All");
+  const [selectedAgeRating, setSelectedAgeRating] = useState("All");
   const [loading, setLoading] = useState(true);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
   const deleted = searchParams.get('deleted');
   const updateSuccess = searchParams.get('updateSuccess');
+
+  const [uniqueYears, setUniqueYears] = useState<number[]>([]);
+  const [uniqueGenres, setUniqueGenres] = useState<string[]>([]);
+  const [uniqueAgeRatings, setUniqueAgeRatings] = useState<string[]>(["U", "P12", "13", "16", "18"]);
 
   function formatDuration(minutes: number | string) {
     const totalMinutes = typeof minutes === "string" ? parseInt(minutes, 10) : minutes;
@@ -31,16 +41,22 @@ export default function MoviesPage() {
     return `${hours}h ${remainingMinutes}m`;
   }
 
+  // 🧠 Fetch movies
   useEffect(() => {
     const fetchMovies = async () => {
-      const { data, error } = await supabase
-        .from("movie")
-        .select("*");
+      const { data, error } = await supabase.from("movie").select("*");
 
       if (error) {
         console.error("Error fetching movies:", error);
       } else {
         setMovies(data ?? []);
+        setFilteredMovies(data ?? []);
+
+        const years = Array.from(new Set(data.map((m) => m.year))).sort((a, b) => b - a);
+        const genres = Array.from(new Set(data.flatMap((m) => m.genre || []))).sort();
+
+        setUniqueYears(years);
+        setUniqueGenres(genres);
       }
 
       setLoading(false);
@@ -49,45 +65,140 @@ export default function MoviesPage() {
     fetchMovies();
   }, []);
 
+  // 🧩 Apply filters
+  useEffect(() => {
+    let filtered = [...movies];
+
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter((m) =>
+        m.movie_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedYear !== "All") {
+      filtered = filtered.filter((m) => m.year === Number(selectedYear));
+    }
+
+    if (selectedGenre !== "All") {
+      filtered = filtered.filter((m) => m.genre?.includes(selectedGenre));
+    }
+
+    if (selectedAgeRating !== "All") {
+      filtered = filtered.filter((m) => m.age_rating === selectedAgeRating);
+    }
+
+    setFilteredMovies(filtered);
+  }, [searchTerm, selectedYear, selectedGenre, selectedAgeRating, movies]);
+
   return (
-    <div className="py-10 px-12">
+    <div className="py-10 px-12 font-inter">
       <Theme className="inline">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold font-inter">Movies Management</h1>
-          <Button color="green" size="2" variant="solid" type="submit" 
-            onClick={() => {
-              router.push('/manager/movies/add-movie');
-            }}>
+          <h1 className="text-2xl font-bold">Movies Management</h1>
+          <Button
+            color="green"
+            size="2"
+            variant="solid"
+            type="submit"
+            onClick={() => router.push('/manager/movies/add-movie')}
+          >
             <PlusIcon />
             Add Movie
           </Button>
         </div>
+
+        {/* ✅ Status Messages */}
         {success && (
-          <Callout.Root color="green" size="2" variant='soft' className="font-inter mb-4">
-            <Callout.Icon>
-              <CheckCircledIcon />
-            </Callout.Icon>
+          <Callout.Root color="green" size="2" variant="soft" className="mb-4">
+            <Callout.Icon><CheckCircledIcon /></Callout.Icon>
             <Callout.Text>Movie added successfully!</Callout.Text>
           </Callout.Root>
         )}
         {deleted && (
-          <Callout.Root color="red" size="2" variant="soft" className="font-inter mb-4">
-            <Callout.Icon>
-              <TrashIcon />
-            </Callout.Icon>
+          <Callout.Root color="red" size="2" variant="soft" className="mb-4">
+            <Callout.Icon><TrashIcon /></Callout.Icon>
             <Callout.Text>Movie deleted successfully.</Callout.Text>
           </Callout.Root>
         )}
         {updateSuccess && (
-          <Callout.Root color="green" size="2" variant="soft" className="font-inter mb-4">
-            <Callout.Icon>
-              <CheckCircledIcon />
-            </Callout.Icon>
+          <Callout.Root color="green" size="2" variant="soft" className="mb-4">
+            <Callout.Icon><CheckCircledIcon /></Callout.Icon>
             <Callout.Text>Movie updated successfully!</Callout.Text>
           </Callout.Root>
         )}
       </Theme>
 
+      {/* 🔍 Search + Filters */}
+      <Theme className='inline'>
+        <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-6 gap-3">
+          <div className="relative flex-1 min-w-[220px]">
+            <MagnifyingGlassIcon className="absolute left-3 top-3 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search Movie Name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-signature-red focus:outline-none"
+            />
+          </div>
+
+          <select
+            className="border border-gray-300 p-2 rounded-md"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+          >
+            <option value="All">All Years</option>
+            {uniqueYears.map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+
+          <select
+            className="border border-gray-300 p-2 rounded-md"
+            value={selectedGenre}
+            onChange={(e) => setSelectedGenre(e.target.value)}
+          >
+            <option value="All">All Genres</option>
+            {uniqueGenres.map((genre) => (
+              <option key={genre} value={genre}>{genre}</option>
+            ))}
+          </select>
+
+          <select
+            className="border border-gray-300 p-2 rounded-md"
+            value={selectedAgeRating}
+            onChange={(e) => setSelectedAgeRating(e.target.value)}
+          >
+            <option value="All">All Ratings</option>
+            {uniqueAgeRatings.map((rating) => (
+              <option key={rating} value={rating}>{rating}</option>
+            ))}
+          </select>
+
+          <Button
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedYear("All");
+              setSelectedGenre("All");
+              setSelectedAgeRating("All");
+            }}
+            size="2"
+            variant='surface'
+            color='indigo'
+          >
+            Clear Filters
+          </Button>
+        </div>
+      </Theme>
+
+      {/* ⚠️ Display Message if No Results Found for Selected Rating */}
+      {selectedAgeRating !== "All" && !loading && filteredMovies.length === 0 && (
+        <p className="text-red-600 font-medium mb-4">
+          No results found for movies rated <span className="font-bold">{selectedAgeRating}</span>.
+        </p>
+      )}
+
+      {/* 🎬 Movies Table */}
       {loading ? (
         <p>Loading movies...</p>
       ) : (
@@ -105,14 +216,14 @@ export default function MoviesPage() {
               </tr>
             </thead>
             <tbody>
-              {movies.length > 0 ? (
-                movies.map((movie, index) => (
-                  <tr key={movie.movie_id || index} className="border-t border-gray-200">
+              {filteredMovies.length > 0 ? (
+                filteredMovies.map((movie, index) => (
+                  <tr key={movie.movie_id} className="border-t border-gray-200 hover:bg-gray-50">
                     <td className="py-3 px-6">{index + 1}</td>
                     <td className="py-3 px-6">{movie.movie_name}</td>
                     <td className="py-3 px-6">{movie.year}</td>
                     <td className="py-3 px-6">{formatDuration(movie.duration)}</td>
-                    <td className="py-3 px-6">{movie.genre?.join(", ")}</td>
+                    <td className="py-3 px-6">{movie.genre?.join(", ") || "-"}</td>
                     <td className="py-3 px-6">{movie.age_rating}</td>
                     <td className="py-3 px-6">
                       <Flex gap="2">
@@ -140,7 +251,7 @@ export default function MoviesPage() {
                 ))
               ) : (
                 <tr>
-                  <td className="py-3 px-6 text-center" colSpan={6}>
+                  <td className="py-3 px-6 text-center" colSpan={7}>
                     No movies found.
                   </td>
                 </tr>
