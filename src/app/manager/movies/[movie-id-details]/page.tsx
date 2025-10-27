@@ -113,7 +113,7 @@ export default function MovieDetailsPage() {
             </tr>
             <tr>
               <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Description</td>
-              <td className="border border-gray-200 py-3 px-4">{movie.movie_desc || "-"}</td>
+              <td className="border border-gray-200 py-3 px-4 text-justify">{movie.movie_desc || "-"}</td>
             </tr>
             <tr>
               <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Year</td>
