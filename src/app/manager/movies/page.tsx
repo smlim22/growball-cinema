@@ -2,7 +2,7 @@
 import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
-import { PlusIcon, CheckCircledIcon } from "@radix-ui/react-icons";
+import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Movie = {
@@ -94,14 +94,23 @@ export default function MoviesPage() {
                     <td className="py-3 px-6">{formatDuration(movie.duration)}</td>
                     <td className="py-3 px-6">{movie.age_rating}</td>
                     <td className="py-3 px-6">
-                      <Flex gap="1">
+                      <Flex gap="2">
                         <Button
                           color="blue"
                           size="2"
                           variant="solid"
                           onClick={() => router.push(`/manager/movies/${movie.movie_id}`)}
                         >
+                          <EyeOpenIcon />
                           View
+                        </Button>
+                        <Button
+                          color="amber"
+                          size="2"
+                          variant="solid"
+                        >
+                          <Pencil2Icon />
+                          Edit
                         </Button>
                       </Flex>
                     </td>
