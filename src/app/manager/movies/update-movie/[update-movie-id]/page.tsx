@@ -1,12 +1,30 @@
 'use client';
-import { Theme, Button } from '@radix-ui/themes';
+import { Theme, Button, Callout } from '@radix-ui/themes';
+import { PlusIcon, ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import Form from 'next/form';
-import { PlusIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 
-export default function AddMoviePage() {
+type Movie = {
+  movie_id: number;
+  movie_name: string;
+  movie_desc?: string;
+  year: number;
+  duration: number;
+  age_rating: string;
+  genre?: string[];
+  ticket_price?: number;
+};
+
+export default function UpdateMoviePage(){
+    const params = useParams();
+    const movieId = params['update-movie-id'];
+    const [movie, setMovie] = useState<Movie | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const router = useRouter();
+
     const [movieName, setMovieName] = useState('');
     const [description, setDescription] = useState('');
     const [year, setYear] = useState('');
@@ -14,89 +32,115 @@ export default function AddMoviePage() {
     const [ageRating, setAgeRating] = useState('U');
     const [genre, setGenre] = useState('');
     const [ticketPrice, setTicketPrice] = useState('');
-    const [staffID, setStaffID] = useState<number | null>(null);
 
-    // Track which fields are invalid
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const router = useRouter();
-
+    // Fetch movie details
     useEffect(() => {
-        const getStaffID = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            const { data } = await supabase.from("staff").select("staff_id").eq("uuid", user?.id).single();
-            setStaffID(data?.staff_id ?? null);
+        const fetchMovie = async () => {
+            if (!movieId) {
+                console.warn("No movie ID found in params:", params);
+                setLoading(false);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from("movie")
+                .select("*")
+                .eq("movie_id", Number(movieId))
+                .single();
+
+            if (error) {
+                console.error("Error fetching movie:", error);
+            } else {
+                setMovie(data ?? null);
+            }
+            setLoading(false);
+            setMovieName(data?.movie_name || '');
+            setDescription(data?.movie_desc || '');
+            setYear(data?.year.toString() || '');
+            setDuration(data?.duration.toString() || '');
+            setAgeRating(data?.age_rating || 'U');
+            setGenre(data?.genre ? data.genre.join(', ') : '');
+            setTicketPrice(data?.ticket_price ? data.ticket_price.toString() : '');
         };
-        getStaffID();
-    }, []);
+
+        fetchMovie();
+    }, [movieId]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const newErrors: { [key: string]: string } = {};
 
-        if (!movieName) newErrors.movieName = "*Required field";
-        if (!description) newErrors.description = "*Required field";
-        if (!year) newErrors.year = "*Required field";
-        if (!duration) newErrors.duration = "*Required field";
-        if (!ageRating) newErrors.ageRating = "*Required field";
-        if (!genre) newErrors.genre = "*Required field";
-        if (!ticketPrice) newErrors.ticketPrice = "*Required field";
+        // Validate inputs
+        const newErrors: { [key: string]: string } = {};
+        if (!movieName) newErrors.movieName = "Movie name is required.";
+        if (!description) newErrors.description = "Description is required.";
+        if (!year || isNaN(Number(year))) newErrors.year = "Valid year is required.";
+        if (!duration || isNaN(Number(duration))) newErrors.duration = "Valid duration is required.";
+        if (!ageRating) newErrors.ageRating = "Age rating is required.";
+        if (!genre) newErrors.genre = "Genre is required.";
+        if (!ticketPrice || isNaN(Number(ticketPrice))) newErrors.ticketPrice = "Valid ticket price is required.";
 
         setErrors(newErrors);
 
-        if (Object.keys(newErrors).length > 0) return;
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
 
         const { error } = await supabase
-            .from('movie')
-            .insert([
-                {
-                    movie_name: movieName,
-                    movie_desc: description,
-                    year: parseInt(year, 10),
-                    duration: parseInt(duration, 10),
-                    age_rating: ageRating,
-                    genre: genre
-                        .split(",")   
-                        .map(g => g.trim())           
-                        .filter(g => g.length > 0), 
-                    ticket_price: parseFloat(ticketPrice),
-                    added_by: staffID
-                }
-            ]);
+            .from("movie")
+            .update({
+                movie_name: movieName,
+                movie_desc: description,
+                year: parseInt(year, 10),
+                duration: parseInt(duration, 10),
+                age_rating: ageRating,
+                genre: genre
+                    .split(",")
+                    .map(g => g.trim())
+                    .filter(g => g.length > 0),
+                ticket_price: parseFloat(ticketPrice)
+            })
+            .eq("movie_id", movieId);
 
         if (error) {
-            console.error("Error adding movie:", error);
-            setErrors({ general: "*Error adding movie. Please try again." });
+            console.error("Error updating movie:", error);
+            setErrors({ general: "*Error updating movie. Please try again." });
         } else {
-            router.push('/manager/movies?success=1');
+            router.push('/manager/movies?updateSuccess=1');
         }
+
     };
 
+    if (loading) return <p className="px-12 py-10">Loading...</p>;
+
+    // Movie not found
+    if (!movie) {
+        return (
+            <Theme className="inline">
+                <Callout.Root color="red" size="2" variant="soft" className="font-inter mx-12 my-10">
+                    <Callout.Text>Movie not found.</Callout.Text>
+                </Callout.Root>
+            </Theme>
+
+        );
+    }
+
     const getInputClass = (field: string) =>
-        `border p-2 rounded-md ${
-            errors[field] ? 'border-red-500' : 'border-gray-300'
-        }`;
+    `border p-2 rounded-md ${
+        errors[field] ? 'border-red-500' : 'border-gray-300'
+    }`;
+
 
     return (
         <div className="py-10 px-12">
-            <h1 className="text-2xl font-bold font-inter mb-4">Add Movie</h1>
-
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold mb-4">Update Movie Details</h1>
+            <div className='bg-white p-6 rounded-lg shadow-md'>
                 <a href="/manager/movies" className="text-black hover:underline mb-4 flex gap-1 items-center">
                     <ArrowLeftIcon />
                     Back
                 </a>
                 <hr className="my-2 text-gray-300" />
-
                 <Theme className="inline">
-                    {errors.general && (
-                        <p className="text-red-500 font-inter mb-2">{errors.general}</p>
-                    )}
-
-                    <Form
-                        action="/manager/movies"
-                        className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter"
-                        onSubmit={handleSubmit}
-                    >
+                    <Form action="/manager/movies" className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter" onSubmit={handleSubmit}>
                         {/* Movie Name */}
                         <div className="flex flex-col gap-1">
                             <label>
@@ -209,13 +253,13 @@ export default function AddMoviePage() {
                         <div></div>
                         <div className="justify-self-end">
                             <Button color="green" size="2" variant="solid" type="submit">
-                                <PlusIcon />
-                                Add Movie
+                                <ArchiveIcon />
+                                Update Movie Details
                             </Button>
                         </div>
                     </Form>
                 </Theme>
             </div>
         </div>
-    );
+    )
 }

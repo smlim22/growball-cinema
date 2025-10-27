@@ -20,6 +20,7 @@ export default function MoviesPage() {
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
   const deleted = searchParams.get('deleted');
+  const updateSuccess = searchParams.get('updateSuccess');
 
   function formatDuration(minutes: number | string) {
     const totalMinutes = typeof minutes === "string" ? parseInt(minutes, 10) : minutes;
@@ -76,6 +77,14 @@ export default function MoviesPage() {
             <Callout.Text>Movie deleted successfully.</Callout.Text>
           </Callout.Root>
         )}
+        {updateSuccess && (
+          <Callout.Root color="green" size="2" variant="soft" className="font-inter mb-4">
+            <Callout.Icon>
+              <CheckCircledIcon />
+            </Callout.Icon>
+            <Callout.Text>Movie updated successfully!</Callout.Text>
+          </Callout.Root>
+        )}
       </Theme>
 
       {loading ? (
@@ -117,6 +126,7 @@ export default function MoviesPage() {
                           color="amber"
                           size="2"
                           variant="solid"
+                          onClick={() => router.push(`/manager/movies/update-movie/${movie.movie_id}`)}
                         >
                           <Pencil2Icon />
                           Edit

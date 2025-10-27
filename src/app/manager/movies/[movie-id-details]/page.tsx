@@ -83,9 +83,12 @@ export default function MovieDetailsPage() {
   // Movie not found
   if (!movie) {
     return (
-      <Callout.Root color="red" size="2" variant="soft" className="font-inter mx-12 my-10">
-        <Callout.Text>Movie not found.</Callout.Text>
-      </Callout.Root>
+      <Theme className="inline">
+        <Callout.Root color="red" size="2" variant="soft" className="font-inter mx-12 my-10">
+          <Callout.Text>Movie not found.</Callout.Text>
+        </Callout.Root>
+      </Theme>
+
     );
   }
 
