@@ -11,6 +11,7 @@ type Movie = {
   year: number;
   duration: string;
   age_rating: string;
+  genre?: string[];
 };
 
 export default function MoviesPage() {
@@ -98,6 +99,7 @@ export default function MoviesPage() {
                 <th className="border border-signature-red py-3 px-6 text-left">Name</th>
                 <th className="border border-signature-red py-3 px-6 text-left">Year</th>
                 <th className="border border-signature-red py-3 px-6 text-left">Duration</th>
+                <th className="border border-signature-red py-3 px-6 text-left">Genre</th>
                 <th className="border border-signature-red py-3 px-6 text-left">Age Rating</th>
                 <th className="border border-signature-red py-3 px-6 text-left">Actions</th>
               </tr>
@@ -110,6 +112,7 @@ export default function MoviesPage() {
                     <td className="py-3 px-6">{movie.movie_name}</td>
                     <td className="py-3 px-6">{movie.year}</td>
                     <td className="py-3 px-6">{formatDuration(movie.duration)}</td>
+                    <td className="py-3 px-6">{movie.genre?.join(", ")}</td>
                     <td className="py-3 px-6">{movie.age_rating}</td>
                     <td className="py-3 px-6">
                       <Flex gap="2">

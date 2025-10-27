@@ -19,6 +19,8 @@ type Movie = {
 export default function MovieDetailsPage() {
   const params = useParams();
   const movieId = params['movie-id-details'];
+  const [staffID, setStaffID] = useState<number | null>(null);
+  const [staffName, setStaffName] = useState('');
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -52,12 +54,34 @@ export default function MovieDetailsPage() {
         console.error("Error fetching movie:", error);
       } else {
         setMovie(data ?? null);
+        setStaffID(data?.added_by || null);
       }
       setLoading(false);
     };
 
     fetchMovie();
   }, [movieId]);
+
+  // 🔥 Fetch staff name only AFTER staffID is known
+  useEffect(() => {
+    const getStaffName = async () => {
+      if (!staffID) return; // prevent running if null
+
+      const { data, error } = await supabase
+        .from("staff")
+        .select("staff_name")
+        .eq("staff_id", Number(staffID))
+        .single();
+
+      if (error) {
+        console.error("Error fetching staff name:", error);
+      } else {
+        setStaffName(data?.staff_name || "-");
+      }
+    };
+
+    getStaffName();
+  }, [staffID]);
 
   // Handle movie deletion
   const handleDelete = async () => {
@@ -139,6 +163,10 @@ export default function MovieDetailsPage() {
               <td className="border border-gray-200 py-3 px-4">
                 {movie.ticket_price ? `RM ${movie.ticket_price.toFixed(2)}` : "-"}
               </td>
+            </tr>
+            <tr>
+              <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Added By</td>
+              <td className="border border-gray-200 py-3 px-4">{staffName}</td>
             </tr>
           </tbody>
         </table>
