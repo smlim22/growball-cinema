@@ -22,6 +22,7 @@ export default function FnbPage(){
 
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
+    const updateSuccess = searchParams.get('updateSuccess');
     const router = useRouter();
 
     useEffect(() => {
@@ -78,6 +79,13 @@ export default function FnbPage(){
                     <Callout.Root color="green" size="2" variant="soft" className="mb-4">
                         <Callout.Icon><CheckCircledIcon /></Callout.Icon>
                         <Callout.Text>New F&B item added successfully!</Callout.Text>
+                    </Callout.Root>
+                )}
+
+                {updateSuccess && (
+                    <Callout.Root color="green" size="2" variant="soft" className="mb-4">
+                        <Callout.Icon><CheckCircledIcon /></Callout.Icon>
+                        <Callout.Text>F&B item updated successfully!</Callout.Text>
                     </Callout.Root>
                 )}
 
@@ -139,6 +147,7 @@ export default function FnbPage(){
                                             color="amber"
                                             size="2"
                                             variant='solid'
+                                            onClick={() => router.push(`/manager/fnb/update-fnb-item/${fnb.fnb_id}`)}
                                         >
                                             <Pencil2Icon/>
                                             Edit
