@@ -1,5 +1,5 @@
 'use client';
-import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
+import { Theme, Button, Callout } from '@radix-ui/themes';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon, TrashIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
@@ -17,8 +17,12 @@ export default function FnbPage(){
     const [fnbItems, setFnbItems] = useState<Fnb[]>([]);
     const [filteredFnbItems, setFilteredFnbItems] = useState<Fnb[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedType, setSelectedType] = useState("");
+    const [selectedType, setSelectedType] = useState("All");
     const [availableTypes, setAvailableTypes] = useState<string[]>(["Food", "Beverages"]);
+
+    const searchParams = useSearchParams();
+    const success = searchParams.get('success');
+    const router = useRouter();
 
     useEffect(() => {
         const fetchFnbItems = async () => {
@@ -63,11 +67,19 @@ export default function FnbPage(){
                         size="2"
                         variant='solid'
                         type="submit"
+                        onClick={() => router.push('/manager/fnb/add-fnb-item')}
                     >
                         <PlusIcon/>
                         Add New Item
                     </Button>
                 </div>
+
+                {success && (
+                    <Callout.Root color="green" size="2" variant="soft" className="mb-4">
+                        <Callout.Icon><CheckCircledIcon /></Callout.Icon>
+                        <Callout.Text>New F&B item added successfully!</Callout.Text>
+                    </Callout.Root>
+                )}
 
                 <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3">
                     <div className="relative flex-1 min-w-[220px]">

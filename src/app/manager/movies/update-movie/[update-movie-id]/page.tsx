@@ -1,6 +1,6 @@
 'use client';
 import { Theme, Button, Callout } from '@radix-ui/themes';
-import { PlusIcon, ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import Form from 'next/form';
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
