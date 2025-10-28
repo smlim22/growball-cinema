@@ -41,7 +41,7 @@ export default function MoviesPage() {
     return `${hours}h ${remainingMinutes}m`;
   }
 
-  // 🧠 Fetch movies
+  // Fetch movies
   useEffect(() => {
     const fetchMovies = async () => {
       const { data, error } = await supabase.from("movie").select("*").order("movie_name", {ascending: true});
@@ -65,7 +65,7 @@ export default function MoviesPage() {
     fetchMovies();
   }, []);
 
-  // 🧩 Apply filters
+  // Apply filters
   useEffect(() => {
     let filtered = [...movies];
 
@@ -94,7 +94,7 @@ export default function MoviesPage() {
     <div className="py-10 px-12 font-inter">
       <Theme className="inline">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Movies Management</h1>
+          <h1 className="text-2xl font-bold font-inter">Movies Management</h1>
           <Button
             color="green"
             size="2"
@@ -107,7 +107,7 @@ export default function MoviesPage() {
           </Button>
         </div>
 
-        {/* ✅ Status Messages */}
+        {/* Status Messages */}
         {success && (
           <Callout.Root color="green" size="2" variant="soft" className="mb-4">
             <Callout.Icon><CheckCircledIcon /></Callout.Icon>
@@ -128,7 +128,7 @@ export default function MoviesPage() {
         )}
       </Theme>
 
-      {/* 🔍 Search + Filters */}
+      {/* Search + Filters */}
       <Theme className='inline'>
         <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3">
           <div className="relative flex-1 min-w-[220px]">
@@ -191,14 +191,14 @@ export default function MoviesPage() {
         </div>
       </Theme>
 
-      {/* ⚠️ Display Message if No Results Found for Selected Rating */}
+      {/* Display Message if No Results Found for Selected Rating */}
       {selectedAgeRating !== "All" && !loading && filteredMovies.length === 0 && (
         <p className="text-red-600 font-medium mb-4">
           No results found for movies rated <span className="font-bold">{selectedAgeRating}</span>.
         </p>
       )}
 
-      {/* 🎬 Movies Table */}
+      {/* Movies Table */}
       {loading ? (
         <p>Loading movies...</p>
       ) : (
