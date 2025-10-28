@@ -183,8 +183,8 @@ export default function MoviesPage() {
               setSelectedAgeRating("All");
             }}
             size="2"
-            variant='surface'
-            color='indigo'
+            variant='soft'
+            color='gray'
           >
             Clear Filters
           </Button>
