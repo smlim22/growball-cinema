@@ -1,3 +1,9 @@
+## Info
+This project uses Supabase cloud database.
+Inside the database folder, you'll find the schema, function and triggers needed to ensure the project is fully operational.
+Enable 'pg_cron' extensions for function automation.
+
+## NextJs Info
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

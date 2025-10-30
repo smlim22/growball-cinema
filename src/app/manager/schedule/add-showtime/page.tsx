@@ -9,6 +9,7 @@ import { supabase } from '@/app/lib/supabaseClient';
 type Movie = {
     movie_id: number;
     movie_name: string;
+    duration: number; //in minutes
 }
 
 type Hall = {
@@ -29,7 +30,7 @@ export default function AddShowtimePage(){
     
     useEffect(() => {
         const fetchMovies = async () => {
-            const {data, error} = await supabase.from("movie").select("movie_id, movie_name");
+            const {data, error} = await supabase.from("movie").select("movie_id, movie_name, duration");
             if (error) {
                 console.error("Error fetching halls", error);
             } else {
@@ -71,15 +72,16 @@ export default function AddShowtimePage(){
                     movie_id: selectedMovie,
                     date: date,
                     time: time,
-                    hall_id: selectedHall
+                    hall_id: selectedHall,
+                    status: "Available"
                 }
             ]);
         
         if (error) {
-            console.error("Error adding F&B item:", error);
-            setErrors({ general: "*Error adding F&B item. Please try again." });
+            console.error("Error adding showtime:", error);
+            setErrors({ general: "*Error adding showtime. Please try again." });
         } else {
-            router.push('/manager/schedule?sucess=1');
+            router.push('/manager/schedule?success=1');
         }
     }
 
@@ -145,7 +147,7 @@ export default function AddShowtimePage(){
                         <div className="justify-self-end">
                             <Button color="green" size="2" variant="solid" type="submit">
                                 <PlusIcon />
-                                Add F&B Item
+                                Add Showtime
                             </Button>
                         </div>
                     </Form>

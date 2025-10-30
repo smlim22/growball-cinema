@@ -117,7 +117,7 @@ export default function UpdateMoviePage(){
         return (
             <Theme className="inline">
                 <Callout.Root color="red" size="2" variant="soft" className="font-inter mx-12 my-10">
-                    <Callout.Text>Movie not found.</Callout.Text>
+                    <Callout.Text className='font-inter'>Movie not found.</Callout.Text>
                 </Callout.Root>
             </Theme>
 

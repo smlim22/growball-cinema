@@ -1,8 +1,8 @@
 'use client'
-import { Theme, Button } from '@radix-ui/themes';
+import { Theme, Button, Callout } from '@radix-ui/themes';
 import { useEffect, useState } from "react";
-import { PlusIcon, Pencil2Icon } from "@radix-ui/react-icons";
-import { useRouter } from "next/navigation";
+import { PlusIcon, Pencil2Icon, CheckCircledIcon } from "@radix-ui/react-icons";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from '@/app/lib/supabaseClient';
 
 // Updated type to allow 'movie' to be null, fixing the TypeScript error
@@ -28,6 +28,9 @@ export default function SchedulePage() {
   const [selectedHall, setSelectedHall] = useState<number>(1);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("earliest");
+
+  const searchParams = useSearchParams();
+  const success = searchParams.get('success');
 
   // Set today's date as default
   useEffect(() => {
@@ -115,6 +118,13 @@ export default function SchedulePage() {
             Add Showtime
           </Button>
         </div>
+
+        {success && (
+          <Callout.Root color="green" size="2" variant="soft" className="mb-4">
+            <Callout.Icon><CheckCircledIcon /></Callout.Icon>
+            <Callout.Text className='font-inter'>Showtime added successfully!</Callout.Text>
+          </Callout.Root>
+        )}
 
         {/* Filters (no change) */}
         <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3 font-inter">

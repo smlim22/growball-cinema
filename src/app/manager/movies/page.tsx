@@ -111,19 +111,19 @@ export default function MoviesPage() {
         {success && (
           <Callout.Root color="green" size="2" variant="soft" className="mb-4">
             <Callout.Icon><CheckCircledIcon /></Callout.Icon>
-            <Callout.Text>Movie added successfully!</Callout.Text>
+            <Callout.Text className='font-inter'>Movie added successfully!</Callout.Text>
           </Callout.Root>
         )}
         {deleted && (
           <Callout.Root color="red" size="2" variant="soft" className="mb-4">
             <Callout.Icon><TrashIcon /></Callout.Icon>
-            <Callout.Text>Movie deleted successfully.</Callout.Text>
+            <Callout.Text className='font-inter'>Movie deleted successfully.</Callout.Text>
           </Callout.Root>
         )}
         {updateSuccess && (
           <Callout.Root color="green" size="2" variant="soft" className="mb-4">
             <Callout.Icon><CheckCircledIcon /></Callout.Icon>
-            <Callout.Text>Movie updated successfully!</Callout.Text>
+            <Callout.Text className='font-inter'>Movie updated successfully!</Callout.Text>
           </Callout.Root>
         )}
       </Theme>

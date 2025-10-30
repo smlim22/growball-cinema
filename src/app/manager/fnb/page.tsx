@@ -78,14 +78,14 @@ export default function FnbPage(){
                 {success && (
                     <Callout.Root color="green" size="2" variant="soft" className="mb-4">
                         <Callout.Icon><CheckCircledIcon /></Callout.Icon>
-                        <Callout.Text>New F&B item added successfully!</Callout.Text>
+                        <Callout.Text className='font-inter'>New F&B item added successfully!</Callout.Text>
                     </Callout.Root>
                 )}
 
                 {updateSuccess && (
                     <Callout.Root color="green" size="2" variant="soft" className="mb-4">
                         <Callout.Icon><CheckCircledIcon /></Callout.Icon>
-                        <Callout.Text>F&B item updated successfully!</Callout.Text>
+                        <Callout.Text className='font-inter'>F&B item updated successfully!</Callout.Text>
                     </Callout.Root>
                 )}
 
