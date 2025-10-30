@@ -2,11 +2,92 @@
 import { Theme, Button } from '@radix-ui/themes';
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
 import Form from 'next/form';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 
+type Movie = {
+    movie_id: number;
+    movie_name: string;
+}
+
+type Hall = {
+  hall_id: number;
+  hall_type: string;
+};
+
 export default function AddShowtimePage(){
+    const [movies, setMovies] = useState<Movie[]>();
+    const [halls, setHalls] = useState<Hall[]>();
+    const [selectedMovie, setSelectedMovie] = useState<number>();
+    const [selectedHall, setSelectedHall] = useState<number>();
+    const [date, setDate] = useState('');
+    const [time, setTime] = useState('');
+
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const router = useRouter();
+    
+    useEffect(() => {
+        const fetchMovies = async () => {
+            const {data, error} = await supabase.from("movie").select("movie_id, movie_name");
+            if (error) {
+                console.error("Error fetching halls", error);
+            } else {
+                setMovies(data ?? []);
+            }
+        }
+        fetchMovies();
+    }, [])
+
+    useEffect(() => {
+        const fetchHalls = async () => {
+        const { data, error } = await supabase.from("cinema_hall").select("*");
+            if (error) {
+                console.error("Error fetching halls", error);
+            } else {
+                setHalls(data ?? []);
+            }
+        };
+        fetchHalls();
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const newErrors: { [key: string]: string} = {};
+
+        if(!selectedMovie) newErrors.selectedMovie = "*Required field"
+        if(!selectedHall) newErrors.selectedHall = "*Required field"
+        if(!date) newErrors.date = "*Required field"
+        if(!time) newErrors.time = "*Required field"
+                
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) return;
+
+        const {error} = await supabase
+            .from("showtimes")
+            .insert([
+                {
+                    movie_id: selectedMovie,
+                    date: date,
+                    time: time,
+                    hall_id: selectedHall
+                }
+            ]);
+        
+        if (error) {
+            console.error("Error adding F&B item:", error);
+            setErrors({ general: "*Error adding F&B item. Please try again." });
+        } else {
+            router.push('/manager/schedule?sucess=1');
+        }
+    }
+
+    const getInputClass = (field: string) =>
+    `border p-2 rounded-md ${
+        errors[field] ? 'border-red-500' : 'border-gray-300'
+    }`;
+
     return(
         <div className="py-10 px-12">
             <Theme className="inline">
@@ -17,26 +98,46 @@ export default function AddShowtimePage(){
                         Back
                     </a>
                     <hr className="my-2 text-gray-300" />
-                    <Form action="/manager/schedule" className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter">
+                    {errors.general && (
+                        <p className="text-red-500 font-inter mb-2">{errors.general}</p>
+                    )}
+                    <Form action="/manager/schedule" className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter" onSubmit={handleSubmit}>
                         <div className='flex flex-col gap-1'>
                             <label>Movie Name<span className="text-red-500">*</span></label>
-                            <select>
-                                <option>Select A Movie</option>
+                            <select className={getInputClass("movieID")} value={selectedMovie} onChange={(e) => setSelectedMovie(parseInt(e.target.value)) }>
+                                <option value="">Select a movie</option>
+                                {movies?.map(movie => (
+                                    <option key={movie.movie_id} value={movie.movie_id}>
+                                        {movie.movie_name}
+                                    </option>
+                                ))}
                             </select>
+                            {errors.selectedMovie && <p className="text-red-500 text-sm">{errors.selectedMovie}</p>}
                         </div>
+                        
                         <div className='flex flex-col gap-1'>
                             <label>Cinema Hall<span className="text-red-500">*</span></label>
-                            <select>
-                                <option>Cinema Hall</option>
+                            <select className={getInputClass("hallID")} value={selectedHall} onChange={(e) => setSelectedHall(parseInt(e.target.value))}>
+                                <option value="">Select a cinema hall</option>
+                                {halls?.map(hall => (
+                                    <option key={hall.hall_id} value={hall.hall_id}>
+                                    {hall.hall_id === 9 ? `Hall ${hall.hall_id} (${hall.hall_type})` : `Hall ${hall.hall_id}`}
+                                    </option>
+                                ))}
                             </select>
+                            {errors.selectedHall && <p className="text-red-500 text-sm">{errors.selectedHall}</p>}
                         </div>
+
                         <div className='flex flex-col gap-1'>
                             <label>Date<span className="text-red-500">*</span></label>
-                            <input type="date"></input>
+                            <input type="date" className={getInputClass("date")} value={date} onChange={(e) => setDate(e.target.value)}></input>
+                            {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
                         </div>
+
                         <div className='flex flex-col gap-1'>
                             <label>Time<span className="text-red-500">*</span></label>
-                            <input type="time"></input>
+                            <input type="time" className={getInputClass("time")} value={time} onChange={(e) => setTime(e.target.value)}></input>
+                            {errors.time && <p className="text-red-500 text-sm">{errors.time}</p>}
                         </div>
                         
                         <div></div>
