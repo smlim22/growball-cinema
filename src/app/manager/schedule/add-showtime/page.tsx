@@ -52,6 +52,16 @@ export default function AddShowtimePage(){
         fetchHalls();
     }, []);
 
+    function timeWithMalaysiaOffset(timeHHmm: string) {
+        if (!timeHHmm) return null;
+        // ensure format "HH:mm"
+        const parts = timeHHmm.split(':');
+        const hh = parts[0].padStart(2, '0');
+        const mm = (parts[1] ?? '00').padStart(2, '0');
+        return `${hh}:${mm}:00+08`;
+    }
+
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const newErrors: { [key: string]: string} = {};
@@ -65,13 +75,15 @@ export default function AddShowtimePage(){
 
         if (Object.keys(newErrors).length > 0) return;
 
+        const malaysiaTime = timeWithMalaysiaOffset(time);
+
         const {error} = await supabase
             .from("showtimes")
             .insert([
                 {
                     movie_id: selectedMovie,
                     date: date,
-                    time: time,
+                    time: malaysiaTime,
                     hall_id: selectedHall,
                     status: "Available"
                 }
