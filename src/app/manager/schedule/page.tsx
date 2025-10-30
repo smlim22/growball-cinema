@@ -9,7 +9,7 @@ import { supabase } from '@/app/lib/supabaseClient';
 type Showtime = {
   showtime_id: number;
   movie_id: number;
-  movie: { movie_name: string | null }[] | null; // <-- Allows movie to be null
+  movie: { movie_name: string | null } | null; // <-- Allows movie to be null
   date: string;
   time: string;
   hall_id: number;
@@ -58,7 +58,7 @@ export default function SchedulePage() {
       // Start building the query
       let query = supabase
         .from("showtimes")
-        .select("showtime_id, movie_id, movie(movie_name), date, time, hall_id, status");
+        .select("*, movie(movie_name)");
 
       // 1. Add date filter (always applied)
       query = query.eq('date', selectedDate);
@@ -82,11 +82,8 @@ export default function SchedulePage() {
     };
 
     fetchShowtime();
-    // This dependency array tells React to re-run the effect
-    // whenever one of these filter values changes.
   }, [selectedDate, selectedHall, sortOrder]);
 
-  // We no longer need the client-side 'filteredShowtimes' variable
 
   // Format date (DD/MM/YYYY) and time (hh:mm AM/PM)
   const formatDate = (dateStr: string) => {
@@ -112,7 +109,7 @@ export default function SchedulePage() {
             size="2"
             variant="solid"
             type="button"
-            onClick={() => router.push("/manager/schedule/add")}
+            onClick={() => router.push("/manager/schedule/add-showtime")}
           >
             <PlusIcon />
             Add Showtime
@@ -121,7 +118,7 @@ export default function SchedulePage() {
 
         {/* Filters (no change) */}
         <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3 font-inter">
-          {/* 🎞️ Hall filter */}
+          {/* Hall filter */}
           <div className="flex flex-row items-center gap-x-1">
             <label>Cinema Hall:</label>
             <select
@@ -179,7 +176,7 @@ export default function SchedulePage() {
                 <tr key={showtime.showtime_id} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="py-3 px-6">{formatDate(showtime.date)}</td>
                   <td className="py-3 px-6">{formatTime(showtime.time)}</td>
-                  <td className="py-3 px-6">{showtime.movie?.[0]?.movie_name}</td>
+                  <td className="py-3 px-6">{showtime.movie?.movie_name}</td>
                   <td className="py-3 px-6">{showtime.status}</td>
                   <td className="py-3 px-6">
                     <Button
