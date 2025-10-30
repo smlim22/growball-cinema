@@ -5,10 +5,11 @@ import { PlusIcon, Pencil2Icon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
 import { supabase } from '@/app/lib/supabaseClient';
 
+// Updated type to allow 'movie' to be null, fixing the TypeScript error
 type Showtime = {
   showtime_id: number;
   movie_id: number;
-  movie: { movie_name: string };
+  movie: { movie_name: string } | null; // <-- Allows movie to be null
   date: string;
   time: string;
   hall_id: number;
@@ -24,7 +25,7 @@ export default function SchedulePage() {
   const router = useRouter();
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [halls, setHalls] = useState<Hall[]>([]);
-  const [selectedHall, setSelectedHall] = useState<string>("");
+  const [selectedHall, setSelectedHall] = useState<number>(1);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("earliest");
 
@@ -35,47 +36,57 @@ export default function SchedulePage() {
     setSelectedDate(formatted);
   }, []);
 
-  // Fetch showtimes + halls
+  // Fetch halls (runs only once on component mount)
   useEffect(() => {
-    const fetchShowtime = async () => {
-        const { data, error } = await supabase
-            .from("showtimes")
-            .select("showtime_id, movie(movie_name), date, time, hall_id, status");
-
-        if (error) {
-            console.error("Error fetching showtimes", error);
-        }
-        else {
-            setShowtimes(data ?? []);
-        }
-    };
-
     const fetchHalls = async () => {
-        const { data, error } = await supabase.from("cinema_hall").select("*");
-        if (error) {
-            console.error("Error fetching halls", error);
-        }
-        else {
-            setHalls(data ?? []);
-        }
+      const { data, error } = await supabase.from("cinema_hall").select("*");
+      if (error) {
+        console.error("Error fetching halls", error);
+      } else {
+        setHalls(data ?? []);
+      }
     };
-
-    fetchShowtime();
     fetchHalls();
   }, []);
 
-  // Filter + sort showtimes
-  const filteredShowtimes = showtimes
-    .filter(showtime => {
-      const matchesHall = selectedHall ? showtime.hall_id === Number(selectedHall) : true;
-      const matchesDate = selectedDate ? showtime.date === selectedDate : true;
-      return matchesHall && matchesDate;
-    })
-    .sort((a, b) => {
-      const timeA = new Date(`1970-01-01T${a.time}`);
-      const timeB = new Date(`1970-01-01T${b.time}`);
-      return sortOrder === "earliest" ? timeA.getTime() - timeB.getTime() : timeB.getTime() - timeA.getTime();
-    });
+  // Fetch showtimes based on filters (runs when filters change)
+  useEffect(() => {
+    // Don't run the query if the default date hasn't been set yet
+    if (!selectedDate) return;
+
+    const fetchShowtime = async () => {
+      // Start building the query
+      let query = supabase
+        .from("showtimes")
+        .select("showtime_id, movie_id, movie(movie_name), date, time, hall_id, status");
+
+      // 1. Add date filter (always applied)
+      query = query.eq('date', selectedDate);
+
+      // 2. Add hall filter (only if one is selected)
+      if (selectedHall) {
+        query = query.eq('hall_id', Number(selectedHall));
+      }
+
+      // 3. Add sorting
+      query = query.order('time', { ascending: sortOrder === 'earliest' });
+
+      // Execute the final query
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching showtimes", error);
+      } else {
+        setShowtimes(data ?? []);
+      }
+    };
+
+    fetchShowtime();
+    // This dependency array tells React to re-run the effect
+    // whenever one of these filter values changes.
+  }, [selectedDate, selectedHall, sortOrder]);
+
+  // We no longer need the client-side 'filteredShowtimes' variable
 
   // Format date (DD/MM/YYYY) and time (hh:mm AM/PM)
   const formatDate = (dateStr: string) => {
@@ -93,7 +104,7 @@ export default function SchedulePage() {
   return (
     <div className="py-10 px-12 font-inter">
       <Theme className="inline">
-        {/* Header */}
+        {/* Header (no change) */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold font-inter">Schedule</h1>
           <Button
@@ -108,7 +119,7 @@ export default function SchedulePage() {
           </Button>
         </div>
 
-        {/* Filters */}
+        {/* Filters (no change) */}
         <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3 font-inter">
           {/* 🎞️ Hall filter */}
           <div className="flex flex-row items-center gap-x-1">
@@ -116,9 +127,8 @@ export default function SchedulePage() {
             <select
               className="border border-gray-300 p-2 rounded-md"
               value={selectedHall}
-              onChange={(e) => setSelectedHall(e.target.value)}
+              onChange={(e) => setSelectedHall(parseInt(e.target.value, 10))}
             >
-              <option value="">All Halls</option>
               {halls.map(hall => (
                 <option key={hall.hall_id} value={hall.hall_id}>
                   {hall.hall_id === 9 ? `Hall ${hall.hall_id} (${hall.hall_type})` : `Hall ${hall.hall_id}`}
@@ -127,7 +137,7 @@ export default function SchedulePage() {
             </select>
           </div>
 
-          {/* 📅 Date filter */}
+          {/* Date filter */}
           <div className="flex flex-row items-center gap-x-1">
             <label>Date:</label>
             <input
@@ -138,7 +148,7 @@ export default function SchedulePage() {
             />
           </div>
 
-          {/* 🔽 Sort filter */}
+          {/* Sort filter */}
           <div className="flex flex-row items-center gap-x-1">
             <label>Sort By:</label>
             <select
@@ -164,8 +174,8 @@ export default function SchedulePage() {
             </tr>
           </thead>
           <tbody>
-            {filteredShowtimes.length > 0 ? (
-              filteredShowtimes.map((showtime) => (
+            {showtimes.length > 0 ? (
+              showtimes.map((showtime) => (
                 <tr key={showtime.showtime_id} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="py-3 px-6">{formatDate(showtime.date)}</td>
                   <td className="py-3 px-6">{formatTime(showtime.time)}</td>
