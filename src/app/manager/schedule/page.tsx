@@ -9,7 +9,7 @@ import { supabase } from '@/app/lib/supabaseClient';
 type Showtime = {
   showtime_id: number;
   movie_id: number;
-  movie: { movie_name: string } | null; // <-- Allows movie to be null
+  movie: { movie_name: string | null }[] | null; // <-- Allows movie to be null
   date: string;
   time: string;
   hall_id: number;
@@ -179,7 +179,7 @@ export default function SchedulePage() {
                 <tr key={showtime.showtime_id} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="py-3 px-6">{formatDate(showtime.date)}</td>
                   <td className="py-3 px-6">{formatTime(showtime.time)}</td>
-                  <td className="py-3 px-6">{showtime.movie?.movie_name}</td>
+                  <td className="py-3 px-6">{showtime.movie?.[0]?.movie_name}</td>
                   <td className="py-3 px-6">{showtime.status}</td>
                   <td className="py-3 px-6">
                     <Button
