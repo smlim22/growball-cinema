@@ -157,10 +157,10 @@ export default function AddShowtimePage() {
             <p className="text-red-500 font-inter mb-2">{errors.general}</p>
           )}
 
-          <Form
-            action="/manager/schedule"
+          <form
             className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter"
             onSubmit={handleSubmit}
+            method='post'
           >
             <div className="flex flex-col gap-1">
               <label>
@@ -244,7 +244,7 @@ export default function AddShowtimePage() {
                 Add Showtime
               </Button>
             </div>
-          </Form>
+          </form>
         </div>
       </Theme>
     </div>

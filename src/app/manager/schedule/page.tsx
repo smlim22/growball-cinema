@@ -193,7 +193,7 @@ export default function SchedulePage() {
                       color="amber"
                       size="2"
                       variant="solid"
-                      onClick={() => router.push(`/manager/schedule/update/${showtime.showtime_id}`)}
+                      onClick={() => router.push(`/manager/schedule/update-showtime/${showtime.showtime_id}`)}
                     >
                       <Pencil2Icon />
                       Edit
