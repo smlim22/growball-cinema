@@ -31,6 +31,7 @@ export default function SchedulePage() {
 
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
+  const updated = searchParams.get('updated');
 
   // Set today's date as default
   useEffect(() => {
@@ -123,6 +124,13 @@ export default function SchedulePage() {
           <Callout.Root color="green" size="2" variant="soft" className="mb-4">
             <Callout.Icon><CheckCircledIcon /></Callout.Icon>
             <Callout.Text className='font-inter'>Showtime added successfully!</Callout.Text>
+          </Callout.Root>
+        )}
+
+        {updated && (
+          <Callout.Root color="green" size="2" variant="soft" className="mb-4">
+            <Callout.Icon><CheckCircledIcon /></Callout.Icon>
+            <Callout.Text className='font-inter'>Showtime updated!</Callout.Text>
           </Callout.Root>
         )}
 

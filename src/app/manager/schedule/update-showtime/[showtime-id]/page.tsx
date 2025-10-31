@@ -40,7 +40,7 @@ export default function UpdateShowtimePage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // ✅ Fetch current showtime
+  // Fetch current showtime
   useEffect(() => {
     const fetchShowtime = async () => {
       if (!showtimeId) {
@@ -70,7 +70,7 @@ export default function UpdateShowtimePage() {
     fetchShowtime();
   }, [showtimeId]);
 
-  // ✅ Fetch movies
+  // Fetch movies
   useEffect(() => {
     const fetchMovies = async () => {
       const { data, error } = await supabase
@@ -82,7 +82,7 @@ export default function UpdateShowtimePage() {
     fetchMovies();
   }, []);
 
-  // ✅ Fetch halls
+  // Fetch halls
   useEffect(() => {
     const fetchHalls = async () => {
       const { data, error } = await supabase.from("cinema_hall").select("*");
@@ -92,14 +92,14 @@ export default function UpdateShowtimePage() {
     fetchHalls();
   }, []);
 
-  // ✅ Format time with Malaysia offset for Supabase
+  // Format time with Malaysia offset for Supabase
   function timeWithMalaysiaOffset(timeHHmm: string) {
     if (!timeHHmm) return null;
     const [hh, mm] = timeHHmm.split(":");
     return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00+08`;
   }
 
-  // ✅ Handle form submission
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newErrors: { [key: string]: string } = {};
@@ -130,7 +130,7 @@ export default function UpdateShowtimePage() {
     const endTime = new Date(startTime.getTime() + movie.duration * 60000);
     const endWithBuffer = new Date(endTime.getTime() + 30 * 60000); // +30 min buffer
 
-    // ✅ Fetch existing showtimes for same hall/date
+    // Fetch existing showtimes for same hall/date
     const { data: existingShowtimes, error: fetchError } = await supabase
       .from("showtimes")
       .select("*, movie (duration)")
@@ -143,7 +143,7 @@ export default function UpdateShowtimePage() {
       return;
     }
 
-    // ✅ Check overlap (excluding the current showtime)
+    // Check overlap (excluding the current showtime)
     const hasOverlap = existingShowtimes?.some((s) => {
       if (s.showtime_id === Number(showtimeId)) return false;
       const existingStart = new Date(`${date}T${s.time}:00`);
@@ -161,7 +161,7 @@ export default function UpdateShowtimePage() {
       return;
     }
 
-    // ✅ Update the showtime
+    // Update the showtime
     const { error } = await supabase
       .from("showtimes")
       .update({
