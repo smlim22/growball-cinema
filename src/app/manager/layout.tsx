@@ -55,7 +55,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
     { href: "/manager", label: "Dashboard", icon: <House /> },
     { href: "/manager/movies", label: "Movies Management", icon: <Film /> },
     { href: "/manager/schedule", label: "Schedule", icon: <Calendar /> },
-    { href: "/manager/staff", label: "Staff Management", icon: <UserRound /> },
+    { href: "/manager/staff-management", label: "Staff Management", icon: <UserRound /> },
     { href: "/manager/fnb", label: "F&B Management", icon: <Utensils /> },
     { href: "/manager/feedback-complaint", label: "Feedback & Complaints Management", icon: <MessageSquareText /> },
   ];
