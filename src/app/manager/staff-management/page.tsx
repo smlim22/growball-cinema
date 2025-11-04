@@ -16,14 +16,38 @@ type Staff = {
 export default function StaffManagementPage(){
     const [staff, setStaff] = useState<Staff[]>([]);
     const router = useRouter();
+    
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedRole, setSelectedRole] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('');
 
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
     const updated = searchParams.get('updated');
 
+    const getRoleName = (level: number) => {
+        switch (level) {
+            case 1: return "Staff";
+            case 2: return "Manager";
+            default: return "Unknown";
+        }
+    };
+
     useEffect(() => {
         const fetchStaff = async () => {
-            let query = supabase.from("staff").select("*");
+            let query = supabase.from("staff").select("*").order("status", {ascending: true});
+
+            if (searchQuery) {
+                query = query.ilike('staff_name', `%${searchQuery}%`); // Case-insensitive search
+            }
+
+            if (selectedRole) {
+                query = query.eq('access_level', selectedRole);
+            }
+
+            if (selectedStatus) {
+                query = query.eq('status', selectedStatus);
+            }
 
             const { data, error } = await query;
 
@@ -35,7 +59,7 @@ export default function StaffManagementPage(){
         }
 
         fetchStaff();
-    })
+    }, [searchQuery, selectedRole, selectedStatus])
 
     return (
         <div className="py-10 px-12">
@@ -73,6 +97,8 @@ export default function StaffManagementPage(){
                             type="text"
                             placeholder="Search Staff Name"
                             className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-signature-red focus:outline-none"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
 
@@ -80,9 +106,12 @@ export default function StaffManagementPage(){
                         <label>Role</label>
                         <select
                             className="border border-gray-300 p-2 rounded-md"
+                            value={selectedRole}
+                            onChange={(e) => setSelectedRole(e.target.value)}
                         >
-                            <option value="earliest">Earliest</option>
-                            <option value="latest">Latest</option>
+                            <option value="">All</option>
+                            <option value="2">Manager</option>
+                            <option value="1">Staff</option>
                         </select>
                     </div>
 
@@ -90,10 +119,28 @@ export default function StaffManagementPage(){
                         <label>Status</label>
                         <select
                             className="border border-gray-300 p-2 rounded-md"
+                            value={selectedStatus}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
                         >
-                            <option value="earliest">Earliest</option>
-                            <option value="latest">Latest</option>
+                            <option value="">All</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
                         </select>
+                    </div>
+
+                    <div className="flex flex-row items-center gap-x-1">
+                        <Button
+                            size="2"
+                            variant='soft'
+                            color='gray'
+                            onClick={() => {
+                                setSearchQuery('');
+                                setSelectedRole('');
+                                setSelectedStatus('');
+                            }}
+                        >
+                            Clear Filters
+                        </Button>
                     </div>
                 </div>
 
@@ -115,7 +162,7 @@ export default function StaffManagementPage(){
                                     <td className="py-3 px-6">{index+1}</td>
                                     <td className="py-3 px-6">{s.staff_name}</td>
                                     <td className="py-3 px-6">{s.staff_email}</td>
-                                    <td className="py-3 px-6">{s.access_level === 1 ? `Staff` : s.access_level === 2 ? `Manager` : ``}</td>
+                                    <td className="py-3 px-6">{getRoleName(s.access_level)}</td>
                                     <td className="py-3 px-6">{s.status}</td>
                                     <td className="py-3 px-6">
                                         <Flex gap="2">
