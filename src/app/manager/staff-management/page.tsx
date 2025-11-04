@@ -1,6 +1,6 @@
 'use client';
 import { Theme, Button, Callout, Flex } from '@radix-ui/themes';
-import { PlusIcon, Pencil2Icon, EyeOpenIcon, CheckCircledIcon } from "@radix-ui/react-icons";
+import { PlusIcon, Pencil2Icon, EyeOpenIcon, CheckCircledIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,6 +10,7 @@ type Staff = {
     staff_name: string,
     staff_email: string,
     access_level: number,
+    status: string
 }
 
 export default function StaffManagementPage(){
@@ -64,6 +65,38 @@ export default function StaffManagementPage(){
                         <Callout.Text className='font-inter'>Showtime updated!</Callout.Text>
                     </Callout.Root>
                 )}
+
+                <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3 font-inter">
+                    <div className="relative flex w-lg">
+                        <MagnifyingGlassIcon className="absolute left-3 top-3 text-gray-500" />
+                        <input
+                            type="text"
+                            placeholder="Search Staff Name"
+                            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-signature-red focus:outline-none"
+                        />
+                    </div>
+
+                    <div className="flex flex-row items-center gap-x-1">
+                        <label>Role</label>
+                        <select
+                            className="border border-gray-300 p-2 rounded-md"
+                        >
+                            <option value="earliest">Earliest</option>
+                            <option value="latest">Latest</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-row items-center gap-x-1">
+                        <label>Status</label>
+                        <select
+                            className="border border-gray-300 p-2 rounded-md"
+                        >
+                            <option value="earliest">Earliest</option>
+                            <option value="latest">Latest</option>
+                        </select>
+                    </div>
+                </div>
+
                 <table className="min-w-full bg-white shadow-md rounded-lg border-collapse border overflow-hidden font-inter">
                     <thead className="bg-signature-red text-white">
                         <tr>
@@ -71,6 +104,7 @@ export default function StaffManagementPage(){
                             <th className="border border-signature-red py-3 px-6 text-left">Name</th>
                             <th className="border border-signature-red py-3 px-6 text-left">Email</th>
                             <th className="border border-signature-red py-3 px-6 text-left">Access Level</th>
+                            <th className="border border-signature-red py-3 px-6 text-left">Status</th>
                             <th className="border border-signature-red py-3 px-6 text-left">Actions</th>
                         </tr>
                     </thead>
@@ -82,6 +116,7 @@ export default function StaffManagementPage(){
                                     <td className="py-3 px-6">{s.staff_name}</td>
                                     <td className="py-3 px-6">{s.staff_email}</td>
                                     <td className="py-3 px-6">{s.access_level === 1 ? `Staff` : s.access_level === 2 ? `Manager` : ``}</td>
+                                    <td className="py-3 px-6">{s.status}</td>
                                     <td className="py-3 px-6">
                                         <Flex gap="2">
                                             <Button
@@ -107,7 +142,7 @@ export default function StaffManagementPage(){
                             ))
                         ) : (
                             <tr>
-                                <td className="py-3 px-6 text-center" colSpan={5}>
+                                <td className="py-3 px-6 text-center" colSpan={6}>
                                     No staff found.
                                 </td>
                             </tr>
