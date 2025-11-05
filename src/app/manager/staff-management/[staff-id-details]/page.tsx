@@ -119,7 +119,7 @@ export default function StaffDetailsPage() {
       <Theme className="inline">
         <h1 className="text-2xl font-bold mb-4 font-inter">Staff Details</h1>
 
-        {/* ✅ Dynamic Radix Callout */}
+        {/* Dynamic Radix Callout */}
         {calloutMessage && (
           <Callout.Root
             color={calloutColor}

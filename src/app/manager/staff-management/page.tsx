@@ -71,6 +71,7 @@ export default function StaffManagementPage(){
                         size="2"
                         variant="solid"
                         type="button"
+                        onClick={() => router.push("/manager/staff-management/add-staff")}
                     >
                         <PlusIcon />
                         Add New Staff
