@@ -80,14 +80,14 @@ export default function StaffManagementPage(){
                 {success && (
                     <Callout.Root color="green" size="2" variant="soft" className="mb-4">
                         <Callout.Icon><CheckCircledIcon /></Callout.Icon>
-                        <Callout.Text className='font-inter'>Showtime added successfully!</Callout.Text>
+                        <Callout.Text className='font-inter'>A new staff added successfully!</Callout.Text>
                     </Callout.Root>
                 )}
         
                 {updated && (
                     <Callout.Root color="green" size="2" variant="soft" className="mb-4">
                         <Callout.Icon><CheckCircledIcon /></Callout.Icon>
-                        <Callout.Text className='font-inter'>Showtime updated!</Callout.Text>
+                        <Callout.Text className='font-inter'>Staff updated!</Callout.Text>
                     </Callout.Root>
                 )}
 

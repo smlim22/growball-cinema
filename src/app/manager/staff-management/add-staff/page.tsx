@@ -1,9 +1,8 @@
 'use client';
-import { Theme, Button } from '@radix-ui/themes';
+import { Theme, Button, Spinner } from '@radix-ui/themes';
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/app/lib/supabaseClient';
 
 export  default function AddStaffPage(){
     const [staffName, setStaffName] = useState('');
@@ -11,36 +10,54 @@ export  default function AddStaffPage(){
     const [staffPhoneNo, setStaffPhoneNo] = useState('');
     const [staffRole, setStaffRole] = useState<number | null>(1);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setLoading(true);
+
         const newErrors: { [key: string]: string } = {};
 
         if (!staffName) newErrors.staffName = "*Required Field";
         if (!staffEmail) newErrors.staffEmail = "*Required Field";
-        if (!staffPhoneNo) newErrors.staffPhoneNo= "*Required Field";
+        if (!staffPhoneNo) newErrors.staffPhoneNo = "*Required Field";
         if (!staffRole) newErrors.staffRole = "*Required Field";
 
         setErrors(newErrors);
-        if (Object.keys(newErrors).length > 0) return;
+        if (Object.keys(newErrors).length > 0) {
+            setLoading(false);
+            return;
+        }
 
-        const { error } = await supabase.from("staff").insert([
-            {
+        try {
+            const res = await fetch("/api/staff/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
                 staff_name: staffName,
                 staff_email: staffEmail,
                 staff_phoneNo: staffPhoneNo,
-                staffRole: Number(staffRole)
-            },
-        ]);
+                access_level: Number(staffRole),
+            }),
+            });
 
-        if (error){
-            console.error("Error adding staff:", error);
-            setErrors({ general: "*Error adding staff. Please try again." });
-        } else {
-            router.push("/manager/staff-management?success=1");
+            const data = await res.json();
+
+            if (!data.success) {
+                console.error("Error creating staff:", data.error);
+                setErrors({ general: "*Error adding staff. Please try again." });
+            } else {
+                router.push("/manager/staff-management?success=1");
+            }
+    
+        } catch (err) {
+            console.error("Unexpected error:", err);
+            setErrors({ general: "*Unexpected error occurred." });
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     const getInputClass = (field: string) =>
     `border p-2 rounded-md ${
@@ -127,9 +144,23 @@ export  default function AddStaffPage(){
                         <div></div>
 
                         <div className="justify-self-end">
-                            <Button color="green" size="2" variant="solid" type="submit">
-                                <PlusIcon/>
-                                Add New Staff
+                            <Button
+                                color="green"
+                                size="2"
+                                variant="solid"
+                                type="submit"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                <>
+                                    <Spinner /> <span className="ml-2">Adding...</span>
+                                </>
+                                ) : (
+                                <>
+                                    <PlusIcon />
+                                    Add New Staff
+                                </>
+                                )}
                             </Button>
                         </div>
                     </form>
