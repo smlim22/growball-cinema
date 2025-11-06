@@ -180,6 +180,7 @@ export default function StaffManagementPage(){
                                                 color="amber"
                                                 size="2"
                                                 variant="solid"
+                                                onClick={() => router.push(`/manager/staff-management/update-staff-details/${s.staff_id}`)}
                                             >
                                                 <Pencil2Icon />
                                                 Edit
