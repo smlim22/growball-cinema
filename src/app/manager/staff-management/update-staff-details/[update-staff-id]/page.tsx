@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 import { UUID } from 'crypto';
+import { NextResponse } from 'next/server';
 
 type Staff = {
     staff_id: number,
@@ -71,8 +72,32 @@ export default function UpdateStaffPage(){
 
         try {
             const res = await fetch("/api/staff/update-details", {
-                method: "POST"
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    staff_id: Number(staffId),
+                    staff_name: staffName,
+                    staff_email: staffEmail,
+                    staff_phoneNo: staffPhoneNo,
+                    access_level: Number(staffRole),
+                    uuid: uuid
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!data.success) {
+                console.error("Error updating staff:", data.error);
+                setErrors({ general: "*Error updating staff. Please try again." });
+            } else {
+                router.push("/manager/staff-management?success=1");
+            }
+
+            return NextResponse.json({
+                success: true,
+                message: "Staff updated"
             })
+
         } catch (err) {
             console.error("Unexpected error:", err);
             setErrors({ general: "*Unexpected error occurred." });
@@ -88,7 +113,6 @@ export default function UpdateStaffPage(){
                     <Callout.Text className='font-inter'>Staff not found.</Callout.Text>
                 </Callout.Root>
             </Theme>
-
         );
     }
 
