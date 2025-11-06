@@ -1,9 +1,10 @@
 'use client';
-import { Theme, Button, Spinner } from '@radix-ui/themes';
+import { Theme, Button, Spinner, Callout } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
+import { UUID } from 'crypto';
 
 type Staff = {
     staff_id: number,
@@ -11,7 +12,8 @@ type Staff = {
     staff_email: string,
     staff_phoneNo: string,
     access_level: number,
-    status: string
+    status: string,
+    uuid: UUID,
 }
 
 export default function UpdateStaffPage(){
@@ -26,6 +28,7 @@ export default function UpdateStaffPage(){
     const [staffEmail, setStaffEmail] = useState('');
     const [staffPhoneNo, setStaffPhoneNo] = useState('');
     const [staffRole, setStaffRole] = useState<number | null>(null);
+    const [uuid, setUUID] = useState(null)
 
     useEffect(() => {
         const fetchStaff = async () => {
@@ -45,6 +48,7 @@ export default function UpdateStaffPage(){
             setStaffEmail(data?.staff_email || '');
             setStaffPhoneNo(data?.staff_phoneNo || '');
             setStaffRole(data?.access_level);
+            setUUID(data?.uuid);
         };
         fetchStaff();
     }, [staffId])
@@ -64,6 +68,28 @@ export default function UpdateStaffPage(){
             setLoading(false);
             return;
         }
+
+        try {
+            const res = await fetch("/api/staff/update-details", {
+                method: "POST"
+            })
+        } catch (err) {
+            console.error("Unexpected error:", err);
+            setErrors({ general: "*Unexpected error occurred." });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    if (!staffDetails) {
+        return (
+            <Theme className="inline">
+                <Callout.Root color="red" size="2" variant="soft" className="font-inter mx-12 my-10">
+                    <Callout.Text className='font-inter'>Staff not found.</Callout.Text>
+                </Callout.Root>
+            </Theme>
+
+        );
     }
 
     const getInputClass = (field: string) =>
@@ -86,7 +112,7 @@ export default function UpdateStaffPage(){
 
                     <hr className="my-2 text-gray-300" />
 
-                    <form className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter" method="post">
+                    <form className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter" method="post" onSubmit={handleSubmit}>
                         <div className="flex flex-col gap-1">
                             <label>
                                 Staff Name<span className="text-red-500">*</span>
