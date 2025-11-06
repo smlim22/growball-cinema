@@ -95,6 +95,39 @@ export default function StaffDetailsPage() {
     setTimeout(() => setCalloutMessage(null), 3000);
   };
 
+  const resetPassword = async () => {
+    if (!staffDetails) return;
+
+    setCalloutMessage(null);
+    setCalloutColor("gray");
+
+    const res = await fetch("/api/staff/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        staff_email: staffDetails.staff_email,
+        staff_name: staffDetails.staff_name,
+        uuid: (staffDetails as any).uuid, // ensure uuid is included in your fetch from DB
+      }),
+    });
+
+    try {
+      const data = await res.json();
+      if (data.success) {
+        setCalloutMessage("Password reset successfully. Email sent to staff.");
+        setCalloutColor("green");
+      } else {
+        setCalloutMessage(`Failed to reset password: ${data.error}`);
+        setCalloutColor("red");
+      }
+    } catch {
+      setCalloutMessage("Unexpected error resetting password.");
+      setCalloutColor("red");
+    }
+
+    setTimeout(() => setCalloutMessage(null), 4000);
+  };
+
   if (loading) {
     return (
       <div className="py-10 px-12 flex flex-col items-center justify-center h-96">
@@ -227,6 +260,7 @@ export default function StaffDetailsPage() {
             <Button
               size="2"
               color="amber"
+              onClick={resetPassword}
             >
               Reset Password
             </Button>

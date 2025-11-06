@@ -23,7 +23,7 @@ function generateRandomPassword(length: number) {
 export async function POST(req: Request) {
   try {
     const { staff_name, staff_email, staff_phoneNo, access_level } = await req.json();
-    const generatedPassword = generateRandomPassword(10); // generate per request
+    const generatedPassword = generateRandomPassword(8); // generate per request
 
     // Create user in Supabase Auth
     const { data: authData, error: authError } =
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     to: staff_email,
     subject: "Welcome to Cinema Ticketing Management System",
     html: `
-        <div style="font-family: Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
+        <div style="font-family: Inter, Arial, sans-serif; background-color: #f9fafb; padding: 24px;">
         <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
             <h2 style="color: #111827;">Welcome, ${staff_name}!</h2>
             <p style="color: #374151; font-size: 16px;">Your staff account has been created successfully.</p>

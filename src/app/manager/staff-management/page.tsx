@@ -35,7 +35,11 @@ export default function StaffManagementPage(){
 
     useEffect(() => {
         const fetchStaff = async () => {
-            let query = supabase.from("staff").select("*").order("status", {ascending: true});
+            let query = supabase
+                .from("staff")
+                .select("*")
+                .order("status", {ascending: true})
+                .order("access_level", {ascending: false})
 
             if (searchQuery) {
                 query = query.ilike('staff_name', `%${searchQuery}%`); // Case-insensitive search
