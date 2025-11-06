@@ -56,6 +56,7 @@ export default function UpdateStaffPage(){
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setLoading(true);
 
         const newErrors: { [key: string]: string } = {};
 
@@ -92,11 +93,6 @@ export default function UpdateStaffPage(){
             } else {
                 router.push("/manager/staff-management?success=1");
             }
-
-            return NextResponse.json({
-                success: true,
-                message: "Staff updated"
-            })
 
         } catch (err) {
             console.error("Unexpected error:", err);

@@ -35,6 +35,11 @@ export async function POST(req: Request) {
 
     if (updateError) throw updateError;
 
+    return NextResponse.json({
+      success: true,
+      message: "Staff details updated successfully",
+    });
+
   } catch (error: any) {
     console.error("Error updating staff:", error);
     return NextResponse.json(

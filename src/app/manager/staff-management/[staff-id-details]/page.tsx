@@ -24,6 +24,16 @@ export default function StaffDetailsPage() {
   const [calloutMessage, setCalloutMessage] = useState<string | null>(null);
   const [calloutColor, setCalloutColor] = useState<'green' | 'red' | 'gray'>('gray');
 
+  function formatDateToDDMMYYYY(dateString?: string | null): string {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-'; // invalid date
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   useEffect(() => {
     const fetchStaffDetails = async () => {
       if (!staffId) {
@@ -192,7 +202,7 @@ export default function StaffDetailsPage() {
                   Joined On
                 </td>
                 <td className="border border-gray-200 py-3 px-4">
-                  {staffDetails.joined_at}
+                  {formatDateToDDMMYYYY(staffDetails.joined_at)}
                 </td>
               </tr>
               <tr>
@@ -205,14 +215,23 @@ export default function StaffDetailsPage() {
               </tr>
             </tbody>
           </table>
-
-          <Button
-            size="2"
-            color={currentStatus === "Active" ? "red" : "green"}
-            onClick={updateStatus}
-          >
-            {currentStatus === "Active" ? "Disable" : "Enable"}
-          </Button>
+          
+          <div className='flex gap-2'>
+            <Button
+              size="2"
+              color={currentStatus === "Active" ? "red" : "green"}
+              onClick={updateStatus}
+            >
+              {currentStatus === "Active" ? "Disable Account" : "Enable Account"}
+            </Button>
+            <Button
+              size="2"
+              color="amber"
+            >
+              Reset Password
+            </Button>
+          </div>
+          
         </div>
       </Theme>
     </div>
