@@ -13,11 +13,11 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
   const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
 
   useEffect(() => {
-    supabase.from('Movie').select('*').then(({ data }) => setMovies(data || []));
+    supabase.from('movie').select('*').then(({ data }) => setMovies(data || []));
   }, []);
 
   const fetchShowtimes = async (movie_id: number) => {
-    const { data } = await supabase.from('Showtimes').select('*').eq('movie_id', movie_id);
+    const { data } = await supabase.from('showtimes').select('*').eq('movie_id', movie_id);
     setShowtimes(data || []);
     setStep('showtime');
   };
