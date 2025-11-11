@@ -13,7 +13,6 @@ export default function AddMoviePage() {
     const [duration, setDuration] = useState('');
     const [ageRating, setAgeRating] = useState('U');
     const [genre, setGenre] = useState('');
-    const [ticketPrice, setTicketPrice] = useState('');
     const [staffID, setStaffID] = useState<number | null>(null);
 
     // Track which fields are invalid
@@ -39,7 +38,6 @@ export default function AddMoviePage() {
         if (!duration) newErrors.duration = "*Required field";
         if (!ageRating) newErrors.ageRating = "*Required field";
         if (!genre) newErrors.genre = "*Required field";
-        if (!ticketPrice) newErrors.ticketPrice = "*Required field";
 
         setErrors(newErrors);
 
@@ -58,7 +56,6 @@ export default function AddMoviePage() {
                         .split(",")   
                         .map(g => g.trim())           
                         .filter(g => g.length > 0), 
-                    ticket_price: parseFloat(ticketPrice),
                     added_by: staffID
                 }
             ]);
@@ -190,24 +187,7 @@ export default function AddMoviePage() {
                             {errors.genre && <p className="text-red-500 text-sm">{errors.genre}</p>}
                         </div>
 
-                        {/* Ticket Price */}
-                        <div className="flex flex-col gap-1">
-                            <label>
-                                Ticket Price (RM)<span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                className={getInputClass("ticketPrice")}
-                                placeholder="0.00"
-                                step="0.01"
-                                value={ticketPrice}
-                                onChange={(e) => setTicketPrice(e.target.value)}
-                            />
-                            {errors.ticketPrice && <p className="text-red-500 text-sm">{errors.ticketPrice}</p>}
-                        </div>
-
-                        <div></div>
-                        <div className="justify-self-end">
+                        <div className="flex items-end justify-self-end">
                             <Button color="green" size="2" variant="solid" type="submit">
                                 <PlusIcon />
                                 Add Movie

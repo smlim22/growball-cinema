@@ -13,7 +13,6 @@ type Movie = {
   duration: number;
   age_rating: string;
   genre?: string[];
-  ticket_price?: number;
 };
 
 export default function MovieDetailsPage() {
@@ -157,12 +156,6 @@ export default function MovieDetailsPage() {
             <tr>
               <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Genre</td>
               <td className="border border-gray-200 py-3 px-4">{movie.genre?.join(", ") || "-"}</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Ticket Price</td>
-              <td className="border border-gray-200 py-3 px-4">
-                {movie.ticket_price ? `RM ${movie.ticket_price.toFixed(2)}` : "-"}
-              </td>
             </tr>
             <tr>
               <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Added By</td>

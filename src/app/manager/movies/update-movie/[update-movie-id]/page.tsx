@@ -14,7 +14,6 @@ type Movie = {
   duration: number;
   age_rating: string;
   genre?: string[];
-  ticket_price?: number;
 };
 
 export default function UpdateMoviePage(){
@@ -31,7 +30,6 @@ export default function UpdateMoviePage(){
     const [duration, setDuration] = useState('');
     const [ageRating, setAgeRating] = useState('U');
     const [genre, setGenre] = useState('');
-    const [ticketPrice, setTicketPrice] = useState('');
 
     // Fetch movie details
     useEffect(() => {
@@ -60,7 +58,6 @@ export default function UpdateMoviePage(){
             setDuration(data?.duration.toString() || '');
             setAgeRating(data?.age_rating || 'U');
             setGenre(data?.genre ? data.genre.join(', ') : '');
-            setTicketPrice(data?.ticket_price ? data.ticket_price.toString() : '');
         };
 
         fetchMovie();
@@ -77,7 +74,6 @@ export default function UpdateMoviePage(){
         if (!duration || isNaN(Number(duration))) newErrors.duration = "Valid duration is required.";
         if (!ageRating) newErrors.ageRating = "Age rating is required.";
         if (!genre) newErrors.genre = "Genre is required.";
-        if (!ticketPrice || isNaN(Number(ticketPrice))) newErrors.ticketPrice = "Valid ticket price is required.";
 
         setErrors(newErrors);
 
@@ -97,7 +93,6 @@ export default function UpdateMoviePage(){
                     .split(",")
                     .map(g => g.trim())
                     .filter(g => g.length > 0),
-                ticket_price: parseFloat(ticketPrice)
             })
             .eq("movie_id", movieId);
 
@@ -234,24 +229,7 @@ export default function UpdateMoviePage(){
                             {errors.genre && <p className="text-red-500 text-sm">{errors.genre}</p>}
                         </div>
 
-                        {/* Ticket Price */}
-                        <div className="flex flex-col gap-1">
-                            <label>
-                                Ticket Price (RM)<span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                className={getInputClass("ticketPrice")}
-                                placeholder="0.00"
-                                step="0.01"
-                                value={ticketPrice}
-                                onChange={(e) => setTicketPrice(e.target.value)}
-                            />
-                            {errors.ticketPrice && <p className="text-red-500 text-sm">{errors.ticketPrice}</p>}
-                        </div>
-
-                        <div></div>
-                        <div className="justify-self-end">
+                        <div className="flex items-end justify-self-end">
                             <Button color="green" size="2" variant="solid" type="submit">
                                 <ArchiveIcon />
                                 Update Movie Details
