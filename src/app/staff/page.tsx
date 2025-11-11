@@ -41,7 +41,7 @@ export default function StaffPage() {
         <div className="inline-block bg-white p-3 rounded-md shadow-md">
           <h2 className="text-xl font-semibold my-4">Start Transaction</h2>
           <p className="text-lg mb-4 justify-items-end">
-            <MoveRight />
+            <MoveRight className="cursor-pointer" onClick={() => router.push("/staff/pos")}/>
           </p>
         </div>
         <div className="inline-block bg-white p-3 rounded-md shadow-md">

@@ -69,7 +69,7 @@ export default function Sidebar({
       </ul>
 
       {/* User Profile Card at Bottom */}
-      <div className="mt-auto md:absolute md:bottom-3 ">
+      <div className="mt-auto md:absolute md:bottom-3 md:w-56 w-full">
         <Theme className="inline">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
