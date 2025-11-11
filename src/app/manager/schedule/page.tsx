@@ -1,7 +1,7 @@
 'use client'
-import { Theme, Button, Callout } from '@radix-ui/themes';
+import { Theme, Button, Callout, Flex } from '@radix-ui/themes';
 import { useEffect, useState } from "react";
-import { PlusIcon, Pencil2Icon, CheckCircledIcon } from "@radix-ui/react-icons";
+import { PlusIcon, Pencil2Icon, CheckCircledIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from '@/app/lib/supabaseClient';
 
@@ -197,15 +197,28 @@ export default function SchedulePage() {
                   <td className="py-3 px-6">{showtime.movie?.movie_name}</td>
                   <td className="py-3 px-6">{showtime.status}</td>
                   <td className="py-3 px-6">
-                    <Button
-                      color="amber"
-                      size="2"
-                      variant="solid"
-                      onClick={() => router.push(`/manager/schedule/update-showtime/${showtime.showtime_id}`)}
-                    >
-                      <Pencil2Icon />
-                      Edit
-                    </Button>
+                    <Flex gap="2">
+                      <Button
+                        color="blue"
+                        size="2"
+                        variant="solid"
+                        onClick={() => router.push(`/manager/schedule/${showtime.showtime_id}`)}
+                      >
+                        <EyeOpenIcon />
+                        View
+                      </Button>
+                      <Button
+                        color="amber"
+                        size="2"
+                        variant="solid"
+                        onClick={() => router.push(`/manager/schedule/update-showtime/${showtime.showtime_id}`)}
+                        disabled={(showtime.status || '').toLowerCase() === 'unavailable'}
+                        title={(showtime.status || '').toLowerCase() === 'unavailable' ? 'Cannot edit unavailable showtime' : 'Edit showtime'}
+                      >
+                        <Pencil2Icon />
+                        Edit
+                      </Button>
+                    </Flex>
                   </td>
                 </tr>
               ))

@@ -23,6 +23,9 @@ type Showtime = {
   time: string;
   hall_id: number;
   status: string;
+  adult_price: number;
+  child_price: number;
+  senior_price: number;
 };
 
 export default function UpdateShowtimePage() {
@@ -35,6 +38,9 @@ export default function UpdateShowtimePage() {
   const [selectedHall, setSelectedHall] = useState<number>();
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [adultPrice, setAdultPrice] = useState<number>();
+  const [childPrice, setChildPrice] = useState<number>();
+  const [seniorPrice, setSeniorPrice] = useState<number>();
   const [status, setStatus] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
@@ -62,6 +68,9 @@ export default function UpdateShowtimePage() {
         setSelectedHall(data.hall_id);
         setDate(data.date);
         setTime(data.time.split("+")[0].slice(0, 5)); // keep only "HH:mm"
+        setAdultPrice(data.adult_price);
+        setChildPrice(data.child_price);
+        setSeniorPrice(data.senior_price);
         setStatus(data.status);
       }
       setLoading(false)
@@ -109,6 +118,9 @@ export default function UpdateShowtimePage() {
     if (!date) newErrors.date = "*Required field";
     if (!time) newErrors.time = "*Required field";
     if (!status) newErrors.status = "*Required field";
+    if (adultPrice === undefined || isNaN(adultPrice) || adultPrice === 0) newErrors.adultPrice = "*Invalid adult price";
+    if (childPrice === undefined || isNaN(childPrice) || childPrice === 0) newErrors.childPrice = "*Invalid child price";
+    if (seniorPrice === undefined || isNaN(seniorPrice) || seniorPrice === 0) newErrors.seniorPrice = "*Invalid senior price";
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -119,7 +131,7 @@ export default function UpdateShowtimePage() {
       return;
     }
 
-    // ✅ Get movie duration
+    // Get movie duration
     const movie = movies.find((m) => m.movie_id === selectedMovie);
     if (!movie) {
       setErrors({ general: "*Invalid movie selection" });
@@ -170,6 +182,9 @@ export default function UpdateShowtimePage() {
         time: malaysiaTime,
         hall_id: selectedHall,
         status: status,
+        adult_price: adultPrice,
+        child_price: childPrice,
+        senior_price: seniorPrice,
       })
       .eq("showtime_id", showtimeId);
 
@@ -188,27 +203,27 @@ export default function UpdateShowtimePage() {
 
     // Loading state
     if (loading) {
-        return (
-            <div className="font-inter py-10 px-12">
-                <Theme className="inline">
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <Spinner size="3" />
-                        <span className="font-inter text-lg">Loading showtime...</span>
-                    </div>
-                </Theme>
+      return (
+        <div className="font-inter py-10 px-12">
+          <Theme className="inline">
+            <div className="flex items-center gap-3 text-gray-600">
+              <Spinner size="3" />
+              <span className="font-inter text-lg">Loading showtime...</span>
             </div>
-        );
+          </Theme>
+        </div>
+      );
     }
 
     // Not found
     if (!showtime) {
-        return (
-            <Theme className="inline">
-                <Callout.Root color="red" size="2" variant="soft" className="font-inter mx-12 my-10">
-                    <Callout.Text className='font-inter'>Showtime not found.</Callout.Text>
-                </Callout.Root>
-            </Theme>
-        );
+      return (
+        <Theme className="inline">
+          <Callout.Root color="red" size="2" variant="soft" className="font-inter mx-12 my-10">
+            <Callout.Text className='font-inter'>Showtime not found.</Callout.Text>
+          </Callout.Root>
+        </Theme>
+      );
     }
 
 
@@ -327,6 +342,56 @@ export default function UpdateShowtimePage() {
                 <p className="text-red-500 text-sm">{errors.status}</p>
               )}
             </div>
+
+            <div className="flex flex-col gap-1">
+              <label>
+                Adult Price (RM)<span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className={getInputClass("adultPrice")}
+                value={adultPrice}
+                onChange={(e) => setAdultPrice(parseFloat(e.target.value))}
+              />
+              {errors.adultPrice && (
+                <p className="text-red-500 text-sm">{errors.adultPrice}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label>
+                Senior Price (RM)<span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className={getInputClass("seniorPrice")}
+                value={seniorPrice}
+                onChange={(e) => setSeniorPrice(parseFloat(e.target.value))}
+              />
+              {errors.seniorPrice && (
+                <p className="text-red-500 text-sm">{errors.seniorPrice}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label>
+                Child Price (RM)<span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className={getInputClass("childPrice")}
+                value={childPrice}
+                onChange={(e) => setChildPrice(parseFloat(e.target.value))}
+              />
+              {errors.childPrice && (
+                <p className="text-red-500 text-sm">{errors.childPrice}</p>
+              )}
+            </div>
+            
+            <div></div>
 
             <div className="flex justify-self-end items-end">
               <Button color="green" size="2" variant="solid" type="submit">

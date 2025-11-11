@@ -24,6 +24,9 @@ export default function AddShowtimePage() {
   const [selectedHall, setSelectedHall] = useState<number>();
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [adultPrice, setAdultPrice] = useState('0.00');
+  const [childPrice, setChildPrice] = useState('0.00');
+  const [seniorPrice, setSeniorPrice] = useState('0.00');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const router = useRouter();
 
@@ -61,6 +64,9 @@ export default function AddShowtimePage() {
     if (!selectedHall) newErrors.selectedHall = "*Required field";
     if (!date) newErrors.date = "*Required field";
     if (!time) newErrors.time = "*Required field";
+    if (!adultPrice || isNaN(parseFloat(adultPrice)) || parseFloat(adultPrice) == 0) newErrors.adultPrice = "*Invalid adult price";
+    if (!childPrice || isNaN(parseFloat(childPrice)) || parseFloat(childPrice) == 0) newErrors.childPrice = "*Invalid child price";
+    if (!seniorPrice || isNaN(parseFloat(seniorPrice)) || parseFloat(seniorPrice) == 0) newErrors.seniorPrice = "*Invalid senior price";
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -124,6 +130,9 @@ export default function AddShowtimePage() {
         time: malaysiaTime,
         hall_id: selectedHall,
         status: "Available",
+        adult_price: parseFloat(adultPrice),
+        child_price: parseFloat(childPrice),
+        senior_price: parseFloat(seniorPrice),
       },
     ]);
 
@@ -236,9 +245,52 @@ export default function AddShowtimePage() {
               )}
             </div>
 
-            <div></div>
+            <div className='flex flex-col gap-1'>
+              <label>Adult Price (RM)<span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                className={getInputClass("adultPrice")}
+                value={adultPrice}
+                onChange={(e) => setAdultPrice(e.target.value)}
+                step="0.01"
+                min="0"
+              />
+              {errors.adultPrice && (
+                <p className="text-red-500 text-sm">{errors.adultPrice}</p>
+              )}
+            </div>
 
-            <div className="justify-self-end">
+            <div className='flex flex-col gap-1'>
+              <label>Child Price (RM)<span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                className={getInputClass("childPrice")}
+                value={childPrice}
+                onChange={(e) => setChildPrice(e.target.value)}
+                step="0.01"
+                min="0"
+              />
+              {errors.childPrice && (
+                <p className="text-red-500 text-sm">{errors.childPrice}</p>
+              )}
+            </div>
+
+            <div className='flex flex-col gap-1'>
+              <label>Senior Price (RM)<span className="text-red-500">*</span></label>
+              <input
+                type="number"
+                className={getInputClass("seniorPrice")}
+                value={seniorPrice}
+                onChange={(e) => setSeniorPrice(e.target.value)}
+                step="0.01"
+                min="0"
+              />
+              {errors.seniorPrice && (
+                <p className="text-red-500 text-sm">{errors.seniorPrice}</p>
+              )}
+            </div>
+
+            <div className="flex items-end justify-self-end">
               <Button color="green" size="2" variant="solid" type="submit">
                 <PlusIcon />
                 Add Showtime
