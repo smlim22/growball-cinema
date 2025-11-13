@@ -1,7 +1,7 @@
 'use client';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Theme, Button, Flex } from '@radix-ui/themes';
-import { X } from 'lucide-react';
+import { X, Ticket, Utensils } from 'lucide-react';
 import { useState } from 'react';
 import SelectTicketDialog from './SelectTicketDialog';
 import SelectFNBDialog from './SelectFNBDialog';
@@ -21,7 +21,7 @@ export default function AddItemDialog({ open, onOpenChange, onAddItem }: any) {
       <Dialog.Portal>
         {/* Overlay centered with Flexbox */}
         <Dialog.Overlay className="bg-black/50 fixed inset-0 z-[100] flex items-center justify-center">
-          <Dialog.Content className="bg-white rounded-lg p-6 shadow-xl w-full max-w-md relative z-[101]">
+          <Dialog.Content className="bg-white rounded-lg p-6 shadow-xl md:min-w-md relative z-[101]">
             
             {/* Close Button (X) */}
             <Dialog.Close asChild>
@@ -43,11 +43,13 @@ export default function AddItemDialog({ open, onOpenChange, onAddItem }: any) {
 
                 <Theme className="inline w-full">
                   <Flex justify="center" gap="3">
-                    <Button color="green" onClick={() => setType('ticket')}>
-                      🎬 Ticket
+                    <Button color="amber" onClick={() => setType('ticket')}>
+                      <Ticket />
+                      Ticket
                     </Button>
                     <Button color="blue" onClick={() => setType('fnb')}>
-                      🍿 F&B
+                      <Utensils />
+                      F&B
                     </Button>
                   </Flex>
                 </Theme>

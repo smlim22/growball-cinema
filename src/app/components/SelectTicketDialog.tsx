@@ -142,13 +142,13 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
 
           <h2 className="text-lg font-bold my-2 text-center">Select Seats</h2>
 
-          {/* Screen bar */}
-          <div className="relative flex justify-center mb-6">
-            <div className="w-3/4 h-4 border-t-4 border-gray-400 rounded-t-full"></div>
-            <span className="absolute top-0 text-xs tracking-widest text-gray-600">SCREEN</span>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-lg shadow-inner max-h-[70vh] overflow-y-auto">
+          <div className="bg-gray-50 p-4 rounded-lg shadow-inner max-h-[70vh] overflow-auto">
+            {/* Screen bar */}
+            <div className="relative flex justify-center mb-6">
+              <div className="w-3/4 h-4 border-t-4 border-gray-400 rounded-t-full"></div>
+              <span className="absolute top-0 text-xs tracking-widest text-gray-600">SCREEN</span>
+            </div>
+            
             <div className="flex flex-col gap-3 items-center">
               {/* Group by rows (A, B, C, etc.) */}
               {Array.from(new Set(seats.map((s) => s.seat_no.charAt(0)))).map((row) => {
@@ -160,7 +160,7 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
                     <span className="w-5 text-gray-600 font-medium">{row}</span>
 
                     {/* Seat buttons */}
-                    <div className="flex flex-wrap gap-1 justify-center">
+                    <div className="flex flex-1 gap-1 justify-center">
                       {rowSeats.map((s, i) => (
                         <button
                           key={s.seat_no}
@@ -174,10 +174,10 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
                                 ? 'bg-green-600 text-white'
                                 : 'bg-gray-200 hover:bg-gray-300'
                             }
-                            ${i === 4 || i === 12 ? 'ml-4' : ''}  // aisle spacing
+                            ${i === 2 || i === 14 ? 'ml-4' : ''}  // aisle spacing
                           `}
                         >
-                          {s.seat_no.slice(1)}
+                          {s.seat_no}
                         </button>
                       ))}
                     </div>
