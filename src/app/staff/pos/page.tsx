@@ -64,11 +64,17 @@ export default function POSPage() {
               <PlusIcon /> Add Item
             </Button>
 
-            <p className="text-lg font-bold">Total: RM {total.toFixed(2)}</p>
+            <div className="flex items-end gap-4">
+              <p className="text-lg font-bold">Total: RM {total.toFixed(2)}</p>
+              <Button color="indigo" variant="solid" disabled={items.length === 0}>
+                Proceed to Payment
+              </Button>
+            </div>
+            
           </div>
         </div>
 
-        {/* 👇 Add Item Dialog */}
+        {/* Add Item Dialog */}
         <AddItemDialog open={showAddDialog} onOpenChange={setShowAddDialog} onAddItem={addItem} />
       </Theme>
     </div>

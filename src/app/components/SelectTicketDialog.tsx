@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
 import { Button, Theme } from '@radix-ui/themes';
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
 
 export default function SelectTicketDialog({ onBack, onAddItem }: any) {
   const [step, setStep] = useState<'movie' | 'showtime' | 'seat'>('movie');
@@ -13,6 +13,10 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
   const [seats, setSeats] = useState<any[]>([]);
   const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
   const today = new Date().toISOString().split("T")[0];
+
+  const [adultQty, setAdultQty] = useState(0);
+  const [seniorQty, setSeniorQty] = useState(0);
+  const [childQty, setChildQty] = useState(0);
 
   useEffect(() => {
     supabase.from('movie').select('*').order('movie_name').then(({ data }) => setMovies(data || []));
@@ -56,22 +60,29 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
   };
 
   const confirmSelection = () => {
+    const totalPrice = 
+      (adultQty * selectedShowtime.adult_price) +
+      (seniorQty * selectedShowtime.senior_price) +
+      (childQty * selectedShowtime.child_price);
+
+    const totalTickets = adultQty + seniorQty + childQty;
+
     onAddItem({
       type: 'ticket',
       name: selectedMovie.movie_name,
-      quantity: selectedSeats.length,
-      price: selectedSeats.length * selectedMovie.ticket_price,
+      quantity: totalTickets,
+      price: totalPrice,
     });
     onBack();
   };
 
-  // 🕐 Helper: format date to DD/MM/YYYY
+  // Helper: format date to DD/MM/YYYY
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-GB'); // e.g. 25/10/2025
   };
 
-  // 🕑 Helper: format time to 12-hour AM/PM
+  // Helper: format time to 12-hour AM/PM
   const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':');
     const date = new Date();
@@ -90,6 +101,9 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
     <div className="font-inter">
       {step === 'movie' && (
         <>
+          <a onClick={onBack} className="cursor-pointer flex gap-1 items-center hover:underline mb-3">
+            <ArrowLeftIcon /> Back
+          </a>
           <h2 className="text-lg font-bold mb-3">Select Movie</h2>
           <ul>
             {movies.map(m => (
@@ -132,7 +146,9 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
       )}
 
       {step === 'seat' && (
-        <>
+      <div className="flex gap-4">
+        {/* LEFT COLUMN — SEAT SELECTOR */}
+        <div className="flex-1">
           <a
             onClick={() => setStep('showtime')}
             className="cursor-pointer flex gap-1 items-center hover:underline mb-2"
@@ -148,18 +164,15 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
               <div className="w-3/4 h-4 border-t-4 border-gray-400 rounded-t-full"></div>
               <span className="absolute top-0 text-xs tracking-widest text-gray-600">SCREEN</span>
             </div>
-            
+
             <div className="flex flex-col gap-3 items-center">
-              {/* Group by rows (A, B, C, etc.) */}
-              {Array.from(new Set(seats.map((s) => s.seat_no.charAt(0)))).map((row) => {
-                const rowSeats = seats.filter((s) => s.seat_no.startsWith(row));
+              {Array.from(new Set(seats.map(s => s.seat_no.charAt(0)))).map(row => {
+                const rowSeats = seats.filter(s => s.seat_no.startsWith(row));
 
                 return (
                   <div key={row} className="flex items-center justify-center gap-2">
-                    {/* Row label (left) */}
                     <span className="w-5 text-gray-600 font-medium">{row}</span>
 
-                    {/* Seat buttons */}
                     <div className="flex flex-1 gap-1 justify-center">
                       {rowSeats.map((s, i) => (
                         <button
@@ -174,7 +187,7 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
                                 ? 'bg-green-600 text-white'
                                 : 'bg-gray-200 hover:bg-gray-300'
                             }
-                            ${i === 2 || i === 14 ? 'ml-4' : ''}  // aisle spacing
+                            ${i === 2 || i === 14 ? 'ml-4' : ''}
                           `}
                         >
                           {s.seat_no}
@@ -182,7 +195,6 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
                       ))}
                     </div>
 
-                    {/* Row label (right) */}
                     <span className="w-5 text-gray-600 font-medium">{row}</span>
                   </div>
                 );
@@ -202,17 +214,62 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
               <span className="w-4 h-4 bg-gray-400 rounded"></span> Taken
             </div>
           </div>
+        </div>
 
-          {/* Confirm button */}
-          <Theme className="inline">
-            <Button color="green" className="mt-4 w-full" onClick={confirmSelection}>
+        {/* RIGHT COLUMN — CATEGORY PANEL */}
+        <div className="w-64 p-4 mt-4 h-fit max-h-[70vh] overflow-auto">
+
+          {[
+            { label: "Adult", price: selectedShowtime.adult_price, qty: adultQty, setQty: setAdultQty },
+            { label: "Senior", price: selectedShowtime.senior_price, qty: seniorQty, setQty: setSeniorQty },
+            { label: "Children", price: selectedShowtime.child_price, qty: childQty, setQty: setChildQty },
+          ].map(cat => (
+            <div key={cat.label} className="flex justify-between items-center py-2">
+              <span>{cat.label}</span>
+
+              <span className="text-sm text-gray-700">
+                RM {cat.price.toFixed(2)}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => cat.setQty(Math.max(0, cat.qty - 1))}
+                  className="w-6 h-6 rounded-full bg-gray-300 text-black flex items-center justify-center"
+                >
+                  –
+                </button>
+
+                <span className="w-4 text-center">{cat.qty}</span>
+
+                <button
+                  onClick={() => {
+                    const total = adultQty + seniorQty + childQty;
+                    if (total < selectedSeats.length) {
+                      cat.setQty(cat.qty + 1);
+                    }
+                  }}
+                  className="w-6 h-6 rounded-full bg-gray-300 text-black flex items-center justify-center"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* <div className="text-start text-sm text-gray-700 mt-3">
+            Total Tickets: {adultQty + seniorQty + childQty}
+          </div> */}
+
+          <Theme className="mt-4">
+            <Button color="green" onClick={confirmSelection} style={{ width: '100%' }}>
+              <PlusIcon />
               Add {selectedSeats.length} Ticket(s)
             </Button>
           </Theme>
-        </>
-      )}
 
-
+        </div>
+      </div>
+    )}
     </div>
   );
 }
