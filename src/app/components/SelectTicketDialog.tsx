@@ -3,8 +3,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
 import { Button, Theme } from '@radix-ui/themes';
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
+import { CartItem } from '@/app/types/pos';
 
-export default function SelectTicketDialog({ onBack, onAddItem }: any) {
+interface SelectTicketDialogProps {
+  onBack: () => void;
+  onAddItem: (items: CartItem[]) => void;
+}
+
+export default function SelectTicketDialog({ onBack, onAddItem }: SelectTicketDialogProps) {
   const [step, setStep] = useState<'movie' | 'showtime' | 'seat'>('movie');
   const [movies, setMovies] = useState<any[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<any>(null);
@@ -60,20 +66,52 @@ export default function SelectTicketDialog({ onBack, onAddItem }: any) {
   };
 
   const confirmSelection = () => {
+    // Validate that ticket count matches selected seats
+    const totalTickets = adultQty + seniorQty + childQty;
+    
+    if (totalTickets === 0) {
+      alert('Please select at least one ticket.');
+      return;
+    }
+    
+    if (totalTickets !== selectedSeats.length) {
+      alert(`Please select ${totalTickets} seat(s) to match your ticket selection.`);
+      return;
+    }
+
     const totalPrice = 
       (adultQty * selectedShowtime.adult_price) +
       (seniorQty * selectedShowtime.senior_price) +
       (childQty * selectedShowtime.child_price);
 
-    const totalTickets = adultQty + seniorQty + childQty;
+    // Generate unique ID for this cart item
+    const itemId = `ticket-${selectedShowtime.showtime_id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    onAddItem({
+    const cartItem: CartItem = {
+      id: itemId,
       type: 'ticket',
       name: selectedMovie.movie_name,
       quantity: totalTickets,
-      price: totalPrice,
-    });
-    onBack();
+      price: totalPrice, // Total price for all tickets
+      unitPrice: totalPrice / totalTickets, // Average price per ticket
+      movieId: selectedMovie.movie_id,
+      movieName: selectedMovie.movie_name,
+      showtimeId: selectedShowtime.showtime_id,
+      showtime: {
+        date: selectedShowtime.date,
+        time: selectedShowtime.time,
+      },
+      seats: [...selectedSeats], // Copy array
+      ticketBreakdown: {
+        adult: adultQty,
+        senior: seniorQty,
+        child: childQty,
+      },
+    };
+
+    // Pass as array for consistency
+    onAddItem([cartItem]);
+    // Dialog will be closed by parent AddItemDialog
   };
 
   // Helper: format date to DD/MM/YYYY

@@ -5,8 +5,15 @@ import { X, Ticket, Utensils } from 'lucide-react';
 import { useState } from 'react';
 import SelectTicketDialog from './SelectTicketDialog';
 import SelectFNBDialog from './SelectFNBDialog';
+import { CartItem } from '@/app/types/pos';
 
-export default function AddItemDialog({ open, onOpenChange, onAddItem }: any) {
+interface AddItemDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAddItem: (items: CartItem[]) => void;
+}
+
+export default function AddItemDialog({ open, onOpenChange, onAddItem }: AddItemDialogProps) {
   const [type, setType] = useState<string | null>(null);
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -14,6 +21,13 @@ export default function AddItemDialog({ open, onOpenChange, onAddItem }: any) {
       setType(null); // Clear type when dialog closes
     }
     onOpenChange(isOpen);
+  };
+
+  const handleAddItem = (items: CartItem[]) => {
+    onAddItem(items);
+    // Close dialog after adding items
+    setType(null);
+    onOpenChange(false);
   };
 
   return (
@@ -55,9 +69,9 @@ export default function AddItemDialog({ open, onOpenChange, onAddItem }: any) {
                 </Theme>
               </>
             ) : type === 'ticket' ? (
-              <SelectTicketDialog onBack={() => setType(null)} onAddItem={onAddItem} />
+              <SelectTicketDialog onBack={() => setType(null)} onAddItem={handleAddItem} />
             ) : (
-              <SelectFNBDialog onBack={() => setType(null)} onAddItem={onAddItem} />
+              <SelectFNBDialog onBack={() => setType(null)} onAddItem={handleAddItem} />
             )}
           </Dialog.Content>
         </Dialog.Overlay>

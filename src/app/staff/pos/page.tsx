@@ -3,20 +3,29 @@ import { useState } from 'react';
 import { Theme, Button, Flex } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import AddItemDialog from '../../components/AddItemDialog';
+import { CartItem } from '@/app/types/pos';
 
 export default function POSPage() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  const addItem = (item: any) => {
-    setItems(prev => [...prev, item]);
+  const addItems = (newItems: CartItem[]) => {
+    // Handle array of items (both dialogs now pass arrays)
+    setItems(prev => [...prev, ...newItems]);
   };
 
-  const removeItem = (index: number) => {
-    setItems(prev => prev.filter((_, i) => i !== index));
+  const removeItem = (itemId: string) => {
+    setItems(prev => prev.filter(item => item.id !== itemId));
   };
 
-  const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = items.reduce((acc, item) => acc + item.price, 0);
+
+  const formatTime = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
 
   return (
     <div className="py-10 px-12">
@@ -37,13 +46,26 @@ export default function POSPage() {
             <tbody>
               {items.length ? (
                 items.map((item, i) => (
-                  <tr key={i} className="border-t hover:bg-gray-50">
+                  <tr key={item.id} className="border-t hover:bg-gray-50">
                     <td className="py-3 px-6">{i + 1}</td>
-                    <td className="py-3 px-6">{item.name}</td>
-                    <td className="py-3 px-6">{item.quantity}</td>
-                    <td className="py-3 px-6">{item.price.toFixed(2)}</td>
                     <td className="py-3 px-6">
-                      <Button color="red" variant="solid" onClick={() => removeItem(i)}>
+                      <div>
+                        <div className="font-medium">{item.name}</div>
+                        {item.type === 'ticket' && item.showtime && (
+                          <div className="text-xs text-gray-500">
+                            {item.showtime.date} • {formatTime(item.showtime.time)}
+                            {item.seats && item.seats.length > 0 && ` • Seats: ${item.seats.join(', ')}`}
+                          </div>
+                        )}
+                        {item.type === 'fnb' && item.fnbType && (
+                          <div className="text-xs text-gray-500">{item.fnbType}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-6">{item.quantity}</td>
+                    <td className="py-3 px-6">RM {item.price.toFixed(2)}</td>
+                    <td className="py-3 px-6">
+                      <Button color="red" variant="solid" onClick={() => removeItem(item.id)}>
                         <TrashIcon /> Delete
                       </Button>
                     </td>
@@ -75,7 +97,7 @@ export default function POSPage() {
         </div>
 
         {/* Add Item Dialog */}
-        <AddItemDialog open={showAddDialog} onOpenChange={setShowAddDialog} onAddItem={addItem} />
+        <AddItemDialog open={showAddDialog} onOpenChange={setShowAddDialog} onAddItem={addItems} />
       </Theme>
     </div>
   );
