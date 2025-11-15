@@ -1,13 +1,19 @@
 'use client';
 import { useState } from 'react';
-import { Theme, Button, Flex } from '@radix-ui/themes';
+import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import AddItemDialog from '../../components/AddItemDialog';
+import PaymentDialog from '../../components/PaymentDialog';
 import { CartItem } from '@/app/types/pos';
+import { processOrder } from '@/app/utils/orderProcessor';
 
 export default function POSPage() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const addItems = (newItems: CartItem[]) => {
     // Handle array of items (both dialogs now pass arrays)
@@ -27,10 +33,48 @@ export default function POSPage() {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
+  const handlePaymentComplete = async (paymentMethod: 'cash' | 'card', referenceNumber?: number) => {
+    setIsProcessing(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const result = await processOrder(items, paymentMethod, referenceNumber);
+
+      if (result.success) {
+        setSuccessMessage(`Order ${result.orderNumber} processed successfully! PDFs have been generated.`);
+        // Clear cart
+        setItems([]);
+        // Close payment dialog after a short delay
+        setTimeout(() => {
+          setShowPaymentDialog(false);
+        }, 1500);
+      } else {
+        setErrorMessage(result.error || 'Payment processing failed. Please try again.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="py-10 px-12">
       <Theme className="inline">
         <h1 className="text-2xl font-bold mb-4 font-inter">Point Of Sales (POS)</h1>
+
+        {/* Success/Error Messages */}
+        {successMessage && (
+          <Callout.Root color="green" className="mb-4">
+            <Callout.Text>{successMessage}</Callout.Text>
+          </Callout.Root>
+        )}
+        {errorMessage && (
+          <Callout.Root color="red" className="mb-4">
+            <Callout.Text>{errorMessage}</Callout.Text>
+          </Callout.Root>
+        )}
 
         <div className="bg-white rounded-lg shadow-md p-4">
           <table className="min-w-full bg-white shadow-md rounded-lg border-collapse border overflow-hidden font-inter">
@@ -88,7 +132,12 @@ export default function POSPage() {
 
             <div className="flex items-end gap-4">
               <p className="text-lg font-bold">Total: RM {total.toFixed(2)}</p>
-              <Button color="indigo" variant="solid" disabled={items.length === 0}>
+              <Button 
+                color="indigo" 
+                variant="solid" 
+                disabled={items.length === 0 || isProcessing}
+                onClick={() => setShowPaymentDialog(true)}
+              >
                 Proceed to Payment
               </Button>
             </div>
@@ -98,6 +147,15 @@ export default function POSPage() {
 
         {/* Add Item Dialog */}
         <AddItemDialog open={showAddDialog} onOpenChange={setShowAddDialog} onAddItem={addItems} />
+
+        {/* Payment Dialog */}
+        <PaymentDialog
+          open={showPaymentDialog}
+          onOpenChange={setShowPaymentDialog}
+          items={items}
+          total={total}
+          onPaymentComplete={handlePaymentComplete}
+        />
       </Theme>
     </div>
   );

@@ -41,22 +41,74 @@ export default function SelectTicketDialog({ onBack, onAddItem }: SelectTicketDi
   };
 
   const fetchSeats = async (showtime_id: number) => {
-    const { data } = await supabase
-      .from('seat')
-      .select('seat_no, seat_type')
-      .order('seat_no');
-    const { data: taken } = await supabase
-      .from('seat_taken')
-      .select('seat_no')
-      .eq('showtime_id', showtime_id)
-      .eq('status', 'booked');
-    const takenSeats = new Set(taken?.map(s => s.seat_no));
-    const layout = data?.map(s => ({
-      ...s,
-      taken: takenSeats.has(s.seat_no),
-    }));
-    setSeats(layout || []);
-    setStep('seat');
+    try {
+      // Step 1: Get the showtime to retrieve hall_id
+      const { data: showtimeData, error: showtimeError } = await supabase
+        .from('showtimes')
+        .select('hall_id')
+        .eq('showtime_id', showtime_id)
+        .single();
+
+      if (showtimeError || !showtimeData) {
+        console.error('Error fetching showtime:', showtimeError);
+        return;
+      }
+
+      const hallId = showtimeData.hall_id;
+
+      // Step 2: Get all seats for this hall (Seat table has composite PK: seat_no + hall_id)
+      const { data: seatsData, error: seatsError } = await supabase
+        .from('seat')
+        .select('seat_no, seat_type')
+        .eq('hall_id', hallId)
+        .order('seat_no');
+
+      if (seatsError) {
+        console.error('Error fetching seats:', seatsError);
+        return;
+      }
+
+      // Step 3: Get all tickets for this showtime
+      const { data: ticketsData, error: ticketsError } = await supabase
+        .from('ticket')
+        .select('ticket_id')
+        .eq('showtime_id', showtime_id);
+
+      if (ticketsError) {
+        console.error('Error fetching tickets:', ticketsError);
+        return;
+      }
+
+      // Step 4: Get all seat_taken entries for these tickets (where status = 'booked')
+      const ticketIds = ticketsData?.map(t => t.ticket_id) || [];
+      let takenSeats = new Set<string>();
+
+      if (ticketIds.length > 0) {
+        const { data: seatTakenData, error: seatTakenError } = await supabase
+          .from('seat_taken')
+          .select('seat_no')
+          .in('ticket_id', ticketIds)
+          .eq('status', 'booked');
+
+        if (seatTakenError) {
+          console.error('Error fetching seat_taken:', seatTakenError);
+        } else {
+          // Create a set of taken seat numbers for this hall
+          takenSeats = new Set(seatTakenData?.map(st => st.seat_no) || []);
+        }
+      }
+
+      // Step 5: Map seats with taken status
+      const layout = seatsData?.map(seat => ({
+        ...seat,
+        taken: takenSeats.has(seat.seat_no),
+      })) || [];
+
+      setSeats(layout);
+      setStep('seat');
+    } catch (err) {
+      console.error('Error in fetchSeats:', err);
+    }
   };
 
   const toggleSeat = (seat_no: string) => {
