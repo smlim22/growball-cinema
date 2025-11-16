@@ -73,6 +73,9 @@ export async function processOrder(
     // Generate order number
     const orderNumber = generateOrderNumber();
 
+    // Determine order status: 'Pending' if contains any FNB items, 'Completed' if only tickets
+    const orderStatus = fnbItems.length > 0 ? 'Pending' : 'Completed';
+
     // Create order (for F&B items, we'll use a placeholder customer ID or null)
     // Note: Based on ERD, cust_id might be required. Using null or a default customer
     const { data: orderData, error: orderError } = await supabase
@@ -82,7 +85,7 @@ export async function processOrder(
           order_date: orderDate,
           order_time: orderTime,
           payment_method: paymentMethod,
-          status: 'Completed',
+          status: orderStatus,
           cust_id: null, // POS orders might not have a customer
           staff_id: staffId,
           card_reference_number: paymentMethod === 'card' ? referenceNumber : null,
