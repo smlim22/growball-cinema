@@ -69,6 +69,9 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
             await logout();
             router.push("/");
           }}
+          viewAccountSettings={async () => {
+            router.push("/staff/account");
+          }}
         />
         <main className="flex-1 transition-all duration-300" onClick={() => isOpen && setIsOpen(false)}>
           {children}

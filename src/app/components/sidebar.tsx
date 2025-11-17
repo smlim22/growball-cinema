@@ -17,6 +17,7 @@ interface SidebarProps {
   name: string | null;
   email: string | null;
   onLogout: () => Promise<void>;
+  viewAccountSettings: () => Promise<void>;
 }
 
 export default function Sidebar({
@@ -26,7 +27,9 @@ export default function Sidebar({
   name,
   email,
   onLogout,
+  viewAccountSettings,
 }: SidebarProps) {
+
   return (
     <div
       className={`fixed md:static top-0 left-0 h-full md:min-h-screen w-64 bg-signature-red text-white p-4 transform transition-transform duration-300 ease-in-out
@@ -109,6 +112,7 @@ export default function Sidebar({
               <DropdownMenu.Separator className="my-1 border-t border-gray-200" />
               <DropdownMenu.Item
                 className="flex items-center gap-2 px-2 py-2 text-sm text-gray-800 rounded hover:bg-gray-100 cursor-pointer"
+                onClick={viewAccountSettings}
               >
                 <User className="w-4 h-4" />
                 Account Settings
