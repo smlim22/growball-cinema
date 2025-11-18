@@ -73,36 +73,40 @@ export async function processOrder(
     // Generate order number
     const orderNumber = generateOrderNumber();
 
-    // Determine order status: 'Pending' if contains any FNB items, 'Completed' if only tickets
-    const orderStatus = fnbItems.length > 0 ? 'Pending' : 'Completed';
+    let orderId: number | undefined;
 
-    // Create order (for F&B items, we'll use a placeholder customer ID or null)
-    // Note: Based on ERD, cust_id might be required. Using null or a default customer
-    const { data: orderData, error: orderError } = await supabase
-      .from('order')
-      .insert([
-        {
-          order_date: orderDate,
-          order_time: orderTime,
-          payment_method: paymentMethod,
-          status: orderStatus,
-          cust_id: null, // POS orders might not have a customer
-          staff_id: staffId,
-          card_reference_number: paymentMethod === 'card' ? referenceNumber : null,
-        },
-      ])
-      .select('order_id')
-      .single();
+    if (fnbItems.length > 0) {
+      // Determine order status: 'Pending' if contains any FNB items, 'Completed' if only tickets
+      const orderStatus = fnbItems.length > 0 ? 'Pending' : 'Completed';
 
-    if (orderError || !orderData) {
-      console.error('Error creating order:', orderError);
-      return { success: false, error: 'Failed to create order. Please try again.' };
+      // Create order (for F&B items, we'll use a placeholder customer ID or null)
+      // Note: Based on ERD, cust_id might be required. Using null or a default customer
+      const { data: orderData, error: orderError } = await supabase
+        .from('order')
+        .insert([
+          {
+            order_date: orderDate,
+            order_time: orderTime,
+            payment_method: paymentMethod,
+            status: orderStatus,
+            cust_id: null, // POS orders might not have a customer
+            staff_id: staffId,
+            card_reference_number: paymentMethod === 'card' ? referenceNumber : null,
+          },
+        ])
+        .select('order_id')
+        .single();
+
+      if (orderError || !orderData) {
+        console.error('Error creating order:', orderError);
+        return { success: false, error: 'Failed to create order. Please try again.' };
+      }
+
+      orderId = orderData.order_id;
     }
 
-    const orderId = orderData.order_id;
-
     // Create order list items for F&B
-    if (fnbItems.length > 0) {
+    if (fnbItems.length > 0 && orderId !== undefined) {
       const orderListItems = fnbItems.map(item => ({
         fnb_id: item.fnbId!,
         order_id: orderId,
