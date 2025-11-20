@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
 import { EyeOpenIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
+import ViewOrderDialog from '@/app/components/ViewOrderDialog';
 
 type Order = {
     order_id: number;
@@ -18,6 +19,9 @@ export default function FNBStaffPage() {
     const router = useRouter();
     const [selectedStatus, setSelectedStatus] = useState("All");
     const [selectedSort, setSelectedSort] = useState("Newest");
+    const [showViewDialog, setShowViewDialog] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState<number | null>(null);
+    const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 
     // Format date (DD/MM/YYYY) and time (hh:mm AM/PM)
     const formatDate = (dateStr: string) => {
@@ -104,10 +108,10 @@ export default function FNBStaffPage() {
                                 <td className="py-3 px-6">{order.status}</td>
                                 <td className="py-3 px-6">
                                     <Flex gap="2">
-                                        <Button color="blue" size="2" variant="solid" onClick={() => router.push(`/staff/fnb/order/${order.order_id}`)}>
+                                        <Button color="blue" size="2" variant="solid" onClick={() => {setSelectedOrder(order.order_id); setShowViewDialog(true);}}>
                                             <EyeOpenIcon /> View
                                         </Button>
-                                        <Button color="amber" size="2" variant="solid" onClick={() => router.push(`/staff/fnb/order/${order.order_id}`)}>
+                                        <Button color="amber" size="2" variant="solid" onClick={() => setShowUpdateDialog(true)}>
                                             <Pencil2Icon /> Update Status
                                         </Button>
                                     </Flex>
@@ -123,6 +127,16 @@ export default function FNBStaffPage() {
                         )}
                     </tbody>
                 </table>
+                <ViewOrderDialog
+                    open={showViewDialog}
+                    onOpenChange={(openState) => {
+                        setShowViewDialog(openState);
+                        if (!openState) {
+                            setSelectedOrder(null);
+                        }
+                    }}
+                    orderId={selectedOrder}
+                />
             </Theme>
         </div>
     )
