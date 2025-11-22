@@ -1,10 +1,11 @@
 'use client';
 import { Theme, Button, Flex } from '@radix-ui/themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
 import { EyeOpenIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import ViewOrderDialog from '@/app/components/ViewOrderDialog';
+import UpdateOrderDialog from '@/app/components/UpdateOrderDialog';
 
 type Order = {
     order_id: number;
@@ -36,35 +37,36 @@ export default function FNBStaffPage() {
         return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
     };
 
-    useEffect(() => {
-        const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
+        let query = supabase
+            .from('order')
+            .select('*')
 
-            let query = supabase
-                .from('order')
-                .select('*')
-
-            if (selectedStatus !== "All") {
-                 query = query.eq('status', selectedStatus);
-            }
-
-            if (selectedSort === "Newest") {
-                query = query.order('order_date', { ascending: false });
-            }
-
-            if (selectedSort === "Oldest") {
-                query = query.order('order_date', { ascending: true });
-            }
-            
-            const { data, error } = await query;
-
-            if (error) {
-                console.error('Error fetching orders:', error);
-            } else {
-                setOrders(data ?? []);
-            }
+        if (selectedStatus !== "All") {
+             query = query.eq('status', selectedStatus);
         }
-        fetchOrders();
+
+        if (selectedSort === "Newest") {
+            query = query.order('order_date', { ascending: false });
+        }
+
+        if (selectedSort === "Oldest") {
+            query = query.order('order_date', { ascending: true });
+        }
+        
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('Error fetching orders:', error);
+            setError('Failed to fetch orders');
+        } else {
+            setOrders(data ?? []);
+        }
     }, [selectedStatus, selectedSort]);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
 
     return (
         <div className="font-inter py-10 px-12">
@@ -77,6 +79,7 @@ export default function FNBStaffPage() {
                         <option value="Pending">Pending</option>
                         <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
+                        <option value="Ready For Pickup">Ready For Pickup</option>
                     </select>
                 </div>
                 <div className="flex flex-row items-center gap-x-1">
@@ -111,7 +114,7 @@ export default function FNBStaffPage() {
                                         <Button color="blue" size="2" variant="solid" onClick={() => {setSelectedOrder(order.order_id); setShowViewDialog(true);}}>
                                             <EyeOpenIcon /> View
                                         </Button>
-                                        <Button color="amber" size="2" variant="solid" onClick={() => setShowUpdateDialog(true)}>
+                                        <Button color="amber" size="2" variant="solid" onClick={() => {setSelectedOrder(order.order_id); setShowUpdateDialog(true);}}>
                                             <Pencil2Icon /> Update Status
                                         </Button>
                                     </Flex>
@@ -127,6 +130,7 @@ export default function FNBStaffPage() {
                         )}
                     </tbody>
                 </table>
+
                 <ViewOrderDialog
                     open={showViewDialog}
                     onOpenChange={(openState) => {
@@ -136,6 +140,18 @@ export default function FNBStaffPage() {
                         }
                     }}
                     orderId={selectedOrder}
+                />
+
+                <UpdateOrderDialog 
+                    open={showUpdateDialog}
+                    onOpenChange={(openState) => {
+                        setShowUpdateDialog(openState);
+                        if (!openState) {
+                            setSelectedOrder(null);
+                        }
+                    }}
+                    orderId={selectedOrder}
+                    onUpdateSuccess={fetchOrders}
                 />
             </Theme>
         </div>

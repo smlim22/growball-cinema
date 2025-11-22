@@ -44,6 +44,7 @@ export default function ViewOrderDialog({ open, onOpenChange, orderId }: ViewOrd
             if (error) {
                 console.error('Error fetching order:', error);
             } else {
+                console.log(orderList)
                 setOrderList(data || []);
             }
 
@@ -83,14 +84,21 @@ export default function ViewOrderDialog({ open, onOpenChange, orderId }: ViewOrd
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {orderList.map((order, index) => (
-                                                <tr key={order.order_list_no}>
-                                                    <td className='p-2'>{index + 1}</td>
-                                                    <td className='p-2'>{order.fnb?.fnb_name ?? 'Unknown item'}</td>
-                                                    <td className='p-2'>{order.quantity}</td>
-                                                    <td className='p-2'>{order.price.toFixed(2)}</td>
-                                                </tr>
-                                            ))}
+                                            {orderList.length > 0 ? (
+                                                orderList.map((order, index) => (
+                                                    <tr key={order.order_list_no}>
+                                                        <td className='p-2'>{index + 1}</td>
+                                                        <td className='p-2'>{order.fnb?.fnb_name ?? 'Unknown item'}</td>
+                                                        <td className='p-2'>{order.quantity}</td>
+                                                        <td className='p-2'>{order.price.toFixed(2)}</td>
+                                                    </tr>
+                                                ))
+                                                ) : (
+                                                    <tr>
+                                                        <td className='p-2' colSpan={4}>No items found</td>
+                                                    </tr>
+                                                )
+                                            }
                                         </tbody>
                                     </table>
                                 )}
