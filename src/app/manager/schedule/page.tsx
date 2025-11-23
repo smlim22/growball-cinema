@@ -1,7 +1,7 @@
 'use client'
 import { Theme, Button, Callout, Flex } from '@radix-ui/themes';
 import { useEffect, useState } from "react";
-import { PlusIcon, Pencil2Icon, CheckCircledIcon, EyeOpenIcon } from "@radix-ui/react-icons";
+import { PlusIcon, Pencil2Icon, CheckCircledIcon, EyeOpenIcon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from '@/app/lib/supabaseClient';
 
@@ -26,18 +26,33 @@ export default function SchedulePage() {
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [halls, setHalls] = useState<Hall[]>([]);
   const [selectedHall, setSelectedHall] = useState<number>(1);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("earliest");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10;
 
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
   const updated = searchParams.get('updated');
 
-  // Set today's date as default
+  // Set current month date range as default
   useEffect(() => {
     const today = new Date();
-    const formatted = today.toISOString().split("T")[0]; // YYYY-MM-DD
-    setSelectedDate(formatted);
+    //today.setFullYear(2025, 10, 1)
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    
+    // First day of current month
+    const firstDay = new Date(year, month, 2);
+    const startFormatted = firstDay.toISOString().split("T")[0]; // YYYY-MM-DD
+    
+    // Last day of current month
+    const lastDay = new Date(year, month + 1, 1);
+    const endFormatted = lastDay.toISOString().split("T")[0]; // YYYY-MM-DD
+    
+    setStartDate(startFormatted);
+    setEndDate(endFormatted);
   }, []);
 
   // Fetch halls (runs only once on component mount)
@@ -55,8 +70,8 @@ export default function SchedulePage() {
 
   // Fetch showtimes based on filters (runs when filters change)
   useEffect(() => {
-    // Don't run the query if the default date hasn't been set yet
-    if (!selectedDate) return;
+    // Don't run the query if the default dates haven't been set yet
+    if (!startDate || !endDate) return;
 
     const fetchShowtime = async () => {
       // Start building the query
@@ -64,8 +79,8 @@ export default function SchedulePage() {
         .from("showtimes")
         .select("*, movie(movie_name)");
 
-      // 1. Add date filter (always applied)
-      query = query.eq('date', selectedDate);
+      // 1. Add date range filter (always applied)
+      query = query.gte('date', startDate).lte('date', endDate).order('date', { ascending: sortOrder === 'earliest' });
 
       // 2. Add hall filter (only if one is selected)
       if (selectedHall) {
@@ -82,11 +97,12 @@ export default function SchedulePage() {
         console.error("Error fetching showtimes", error);
       } else {
         setShowtimes(data ?? []);
+        setCurrentPage(1); // Reset to first page when filters change
       }
     };
 
     fetchShowtime();
-  }, [selectedDate, selectedHall, sortOrder]);
+  }, [startDate, endDate, selectedHall, sortOrder]);
 
 
   // Format date (DD/MM/YYYY) and time (hh:mm AM/PM)
@@ -100,6 +116,49 @@ export default function SchedulePage() {
     const date = new Date();
     date.setHours(Number(hours), Number(minutes));
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(showtimes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedShowtimes = showtimes.slice(startIndex, endIndex);
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total is less than max visible
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show first page
+      pages.push(1);
+      
+      if (currentPage > 3) {
+        pages.push('...');
+      }
+      
+      // Show pages around current page
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+      
+      // Show last page
+      pages.push(totalPages);
+    }
+    
+    return pages;
   };
 
   return (
@@ -154,12 +213,20 @@ export default function SchedulePage() {
 
           {/* Date filter */}
           <div className="flex flex-row items-center gap-x-1">
-            <label>Date:</label>
+            <label>From:</label>
             <input
               type="date"
               className="border border-gray-300 p-2 rounded-md"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <span className="mx-1">To:</span>
+            <input
+              type="date"
+              className="border border-gray-300 p-2 rounded-md"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              min={startDate}
             />
           </div>
 
@@ -184,18 +251,18 @@ export default function SchedulePage() {
               <th className="border border-signature-red py-3 px-6 text-left">Date</th>
               <th className="border border-signature-red py-3 px-6 text-left">Time</th>
               <th className="border border-signature-red py-3 px-6 text-left">Movie Name</th>
-              <th className="border border-signature-red py-3 px-6 text-left">Status</th>
+              {/* <th className="border border-signature-red py-3 px-6 text-left">Status</th> */}
               <th className="border border-signature-red py-3 px-6 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {showtimes.length > 0 ? (
-              showtimes.map((showtime) => (
+            {paginatedShowtimes.length > 0 ? (
+              paginatedShowtimes.map((showtime) => (
                 <tr key={showtime.showtime_id} className="border-t border-gray-200 hover:bg-gray-50">
                   <td className="py-3 px-6">{formatDate(showtime.date)}</td>
                   <td className="py-3 px-6">{formatTime(showtime.time)}</td>
                   <td className="py-3 px-6">{showtime.movie?.movie_name}</td>
-                  <td className="py-3 px-6">{showtime.status}</td>
+                  {/* <td className="py-3 px-6">{showtime.status}</td> */}
                   <td className="py-3 px-6">
                     <Flex gap="2">
                       <Button
@@ -224,13 +291,63 @@ export default function SchedulePage() {
               ))
             ) : (
               <tr>
-                <td className="py-3 px-6 text-center" colSpan={5}>
+                <td className="py-3 px-6 text-center" colSpan={4}>
                   No showtimes found.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+
+        {/* Pagination Controls */}
+        {showtimes.length > 0 && (
+          <div className="flex items-center justify-between mt-4 font-inter">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, showtimes.length)} of {showtimes.length} showtimes
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                color="gray"
+                variant="soft"
+                size="2"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeftIcon />
+                Previous
+              </Button>
+              
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((page, index) => (
+                  page === '...' ? (
+                    <span key={`ellipsis-${index}`} className="px-2 text-gray-500">...</span>
+                  ) : (
+                    <Button
+                      key={page}
+                      color={currentPage === page ? "blue" : "gray"}
+                      variant={currentPage === page ? "solid" : "soft"}
+                      size="2"
+                      onClick={() => setCurrentPage(page as number)}
+                    >
+                      {page}
+                    </Button>
+                  )
+                ))}
+              </div>
+              
+              <Button
+                color="gray"
+                variant="soft"
+                size="2"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRightIcon />
+              </Button>
+            </div>
+          </div>
+        )}
       </Theme>
     </div>
   );

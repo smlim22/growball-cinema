@@ -90,7 +90,7 @@ export default function POSPage() {
             <tbody>
               {items.length ? (
                 items.map((item, i) => (
-                  <tr key={item.id} className="border-t hover:bg-gray-50">
+                  <tr key={item.id} className="border-t border-gray-200 hover:bg-gray-50">
                     <td className="py-3 px-6">{i + 1}</td>
                     <td className="py-3 px-6">
                       <div>

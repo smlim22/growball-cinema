@@ -1,8 +1,8 @@
 'use client';
-import { Theme, Button, Flex } from '@radix-ui/themes';
+import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
-import { EyeOpenIcon, Pencil2Icon } from '@radix-ui/react-icons';
+import { EyeOpenIcon, Pencil2Icon, CheckCircledIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import ViewOrderDialog from '@/app/components/ViewOrderDialog';
 import UpdateOrderDialog from '@/app/components/UpdateOrderDialog';
@@ -23,6 +23,7 @@ export default function FNBStaffPage() {
     const [showViewDialog, setShowViewDialog] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<number | null>(null);
     const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     // Format date (DD/MM/YYYY) and time (hh:mm AM/PM)
     const formatDate = (dateStr: string) => {
@@ -68,9 +69,30 @@ export default function FNBStaffPage() {
         fetchOrders();
     }, [fetchOrders]);
 
+    const handleUpdateSuccess = useCallback(() => {
+        fetchOrders();
+        setShowSuccessMessage(true);
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => {
+            setShowSuccessMessage(false);
+        }, 5000);
+    }, [fetchOrders]);
+
     return (
         <div className="font-inter py-10 px-12">
             <h1 className="text-2xl font-bold mb-4">F&B Order Management</h1>
+            {showSuccessMessage && (
+                <Theme className="inline">
+                    <Callout.Root color="green" size="2" variant="soft" className="mb-4 font-inter">
+                        <Callout.Icon>
+                            <CheckCircledIcon />
+                        </Callout.Icon>
+                        <Callout.Text className="font-inter">
+                            Order status has been updated successfully!
+                        </Callout.Text>
+                    </Callout.Root>
+                </Theme>
+            )}
             <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3 font-inter">
                 <div className="flex flex-row items-center gap-x-1">
                     <label>Status</label>
@@ -114,7 +136,12 @@ export default function FNBStaffPage() {
                                         <Button color="blue" size="2" variant="solid" onClick={() => {setSelectedOrder(order.order_id); setShowViewDialog(true);}}>
                                             <EyeOpenIcon /> View
                                         </Button>
-                                        <Button color="amber" size="2" variant="solid" onClick={() => {setSelectedOrder(order.order_id); setShowUpdateDialog(true);}}>
+                                        <Button 
+                                            color="amber" 
+                                            size="2" variant="solid" 
+                                            onClick={() => {setSelectedOrder(order.order_id); setShowUpdateDialog(true);}}
+                                            disabled={order.status !== "Completed" ? false : true }
+                                        >
                                             <Pencil2Icon /> Update Status
                                         </Button>
                                     </Flex>
@@ -151,7 +178,7 @@ export default function FNBStaffPage() {
                         }
                     }}
                     orderId={selectedOrder}
-                    onUpdateSuccess={fetchOrders}
+                    onUpdateSuccess={handleUpdateSuccess}
                 />
             </Theme>
         </div>

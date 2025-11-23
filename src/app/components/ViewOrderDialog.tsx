@@ -12,7 +12,7 @@ interface ViewOrderDialogProps {
 }
 
 type OrderList = {
-    order_list_no: number;
+    order_list_id: number;
     order_id: number;
     fnb_id: number;
     quantity: number;
@@ -86,7 +86,7 @@ export default function ViewOrderDialog({ open, onOpenChange, orderId }: ViewOrd
                                         <tbody>
                                             {orderList.length > 0 ? (
                                                 orderList.map((order, index) => (
-                                                    <tr key={order.order_list_no}>
+                                                    <tr key={order.order_list_id}>
                                                         <td className='p-2'>{index + 1}</td>
                                                         <td className='p-2'>{order.fnb?.fnb_name ?? 'Unknown item'}</td>
                                                         <td className='p-2'>{order.quantity}</td>
