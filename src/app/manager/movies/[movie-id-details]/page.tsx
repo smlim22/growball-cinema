@@ -13,6 +13,7 @@ type Movie = {
   duration: number;
   age_rating: string;
   genre?: string[];
+  image_url: string;
 };
 
 export default function MovieDetailsPage() {
@@ -23,7 +24,21 @@ export default function MovieDetailsPage() {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const getStoragePathFromUrl = (url: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      const marker = '/movie_image/';
+      const markerIndex = url.indexOf(marker);
+      if (markerIndex === -1) return null;
+      return url.substring(markerIndex + marker.length);
+    }
+    return url;
+  };
 
   // Helper to format duration
   function formatDuration(minutes: number | string) {
@@ -54,6 +69,7 @@ export default function MovieDetailsPage() {
       } else {
         setMovie(data ?? null);
         setStaffID(data?.added_by || null);
+        setImagePreview(data?.image_url)
       }
       setLoading(false);
     };
@@ -61,7 +77,7 @@ export default function MovieDetailsPage() {
     fetchMovie();
   }, [movieId]);
 
-  // 🔥 Fetch staff name only AFTER staffID is known
+  // Fetch staff name only AFTER staffID is known
   useEffect(() => {
     const getStaffName = async () => {
       if (!staffID) return; // prevent running if null
@@ -85,19 +101,35 @@ export default function MovieDetailsPage() {
   // Handle movie deletion
   const handleDelete = async () => {
     if (!movieId) return;
+    setIsDeleting(true);
 
-    const { error } = await supabase
+    const imagePath = getStoragePathFromUrl(movie?.image_url ?? null);
+
+    const { error: movieError } = await supabase
       .from("movie")
       .delete()
       .eq("movie_id", Number(movieId));
 
-    if (error) {
-      console.error("Error deleting movie:", error);
-      alert("Failed to delete movie. Please try again.");
-    } else {
-      setOpen(false);
-      router.push("/manager/movies?deleted=true");
+    if (movieError) {
+      console.error("Error deleting movie:", movieError.message);
+      setError("Failed to delete movie. Please try again.");
+      setIsDeleting(false);
+      return;
     }
+
+    if (imagePath) {
+      const { error: imageError } = await supabase.storage
+        .from("movie_image")
+        .remove([imagePath]);
+
+      if (imageError) {
+        console.error("Error deleting image:", imageError.message);
+      }
+    }
+
+    setIsDeleting(false);
+    setOpen(false);
+    router.push("/manager/movies?deleted=true");
   };
 
   // Loading state
@@ -111,7 +143,6 @@ export default function MovieDetailsPage() {
           <Callout.Text className='font-inter'>Movie not found.</Callout.Text>
         </Callout.Root>
       </Theme>
-
     );
   }
 
@@ -130,6 +161,10 @@ export default function MovieDetailsPage() {
         </a>
 
         <hr className="my-2 text-gray-300" />
+
+        {error && (
+          <p className="text-red-500 font-inter mb-2">{error}</p>
+        )}
 
         <table className="min-w-full border border-collapse border-gray-200 rounded-md font-inter my-4">
           <tbody>
@@ -161,6 +196,20 @@ export default function MovieDetailsPage() {
               <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Added By</td>
               <td className="border border-gray-200 py-3 px-4">{staffName}</td>
             </tr>
+            <tr>
+              <td className="border border-gray-200 py-3 px-4 font-medium bg-gray-50">Image</td>
+              <td className="border border-gray-200 py-3 px-4">
+              {imagePreview && (
+                <div className="mt-2">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="max-w-xs max-h-64 rounded-md border border-gray-300 object-contain"
+                  />
+                </div>
+              )}
+              </td>
+            </tr>
           </tbody>
         </table>
 
@@ -185,7 +234,9 @@ export default function MovieDetailsPage() {
                   <Button variant="soft" color="gray">Cancel</Button>
                 </AlertDialog.Cancel>
                 <AlertDialog.Action>
-                  <Button color="red" onClick={handleDelete}>Delete</Button>
+                  <Button color="red" onClick={handleDelete} disabled={isDeleting}>
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </Button>
                 </AlertDialog.Action>
               </Flex>
             </AlertDialog.Content>

@@ -1,8 +1,7 @@
 'use client';
-import { Theme, Button } from '@radix-ui/themes';
-import Form from 'next/form';
+import { Theme, Button, Spinner } from '@radix-ui/themes';
 import { PlusIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 
@@ -14,9 +13,12 @@ export default function AddMoviePage() {
     const [ageRating, setAgeRating] = useState('U');
     const [genre, setGenre] = useState('');
     const [staffID, setStaffID] = useState<number | null>(null);
+    const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     // Track which fields are invalid
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -28,8 +30,53 @@ export default function AddMoviePage() {
         getStaffID();
     }, []);
 
+    // Clean up preview URL when component unmounts or image changes
+    useEffect(() => {
+        return () => {
+            if (imagePreview) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setImage(file);
+            
+            // Create preview URL
+            if (imagePreview) {
+                URL.revokeObjectURL(imagePreview);
+            }
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
+
+    const uploadImage = async (file: File): Promise<string | null> => {
+        const filePath = `${file.name}`
+
+        const {error} = await supabase.storage.from("movie_image").upload(filePath, file);
+
+        if (error) {
+            console.error("Error uploading image:", error.message);
+            return null;
+        }
+
+        const {data} = await supabase.storage.from("movie_image").getPublicUrl(filePath);
+
+        return data.publicUrl
+    }
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsLoading(true);
+
+        let imageUrl: string | null = null;
+        if (image) {
+            imageUrl = await uploadImage(image)
+        }
+
         const newErrors: { [key: string]: string } = {};
 
         if (!movieName) newErrors.movieName = "*Required field";
@@ -38,10 +85,14 @@ export default function AddMoviePage() {
         if (!duration) newErrors.duration = "*Required field";
         if (!ageRating) newErrors.ageRating = "*Required field";
         if (!genre) newErrors.genre = "*Required field";
+        if (!image) newErrors.image = "*Image required";
 
         setErrors(newErrors);
 
-        if (Object.keys(newErrors).length > 0) return;
+        if (Object.keys(newErrors).length > 0) {
+            setIsLoading(false);
+            return;
+        }
 
         const { error } = await supabase
             .from('movie')
@@ -56,21 +107,23 @@ export default function AddMoviePage() {
                         .split(",")   
                         .map(g => g.trim())           
                         .filter(g => g.length > 0), 
-                    added_by: staffID
+                    added_by: staffID,
+                    image_url: imageUrl
                 }
             ]);
 
         if (error) {
             console.error("Error adding movie:", error);
             setErrors({ general: "*Error adding movie. Please try again." });
+            setIsLoading(false);
         } else {
             router.push('/manager/movies?success=1');
         }
     };
 
     const getInputClass = (field: string) =>
-        `border p-2 rounded-md ${
-            errors[field] ? 'border-red-500' : 'border-gray-300'
+        `border p-2 rounded-md focus:ring-2 focus:ring-blue-400 outline-none transition ${
+            errors[field] ? 'border-red-500 focus:ring-2 focus:ring-red-400' : 'border-gray-300 focus:ring-2 focus:ring-blue-400'
         }`;
 
     return (
@@ -89,8 +142,7 @@ export default function AddMoviePage() {
                         <p className="text-red-500 font-inter mb-2">{errors.general}</p>
                     )}
 
-                    <Form
-                        action="/manager/movies"
+                    <form
                         className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter"
                         onSubmit={handleSubmit}
                     >
@@ -187,13 +239,44 @@ export default function AddMoviePage() {
                             {errors.genre && <p className="text-red-500 text-sm">{errors.genre}</p>}
                         </div>
 
+                        <div className="flex flex-col gap-1">
+                            <label>Image<span className="text-red-500">*</span></label>
+                            <input 
+                                type="file"
+                                accept='image/*'
+                                onChange={handleFileChange}
+                                className={`${getInputClass("image")} file:cursor-pointer file:bg-gray-300 file:text-gray-800 file:text-base hover:file:bg-gray-200 file:rounded-sm file:px-2 file:mr-3`}
+                            />
+                            {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
+                            {imagePreview && (
+                                <div className="mt-2">
+                                    <img 
+                                        src={imagePreview} 
+                                        alt="Preview" 
+                                        className="max-w-xs max-h-64 rounded-md border border-gray-300 object-contain"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div></div>
+
                         <div className="flex items-end justify-self-end">
-                            <Button color="green" size="2" variant="solid" type="submit">
-                                <PlusIcon />
-                                Add Movie
+                            <Button color="green" size="2" variant="solid" type="submit" disabled={isLoading}>
+                                {isLoading ? (
+                                    <>
+                                        <Spinner />
+                                        Adding...
+                                    </>
+                                ) : (
+                                    <>
+                                        <PlusIcon />
+                                        Add Movie
+                                    </>
+                                )}
                             </Button>
                         </div>
-                    </Form>
+                    </form>
                 </Theme>
             </div>
         </div>

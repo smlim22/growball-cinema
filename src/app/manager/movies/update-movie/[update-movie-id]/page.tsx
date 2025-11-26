@@ -1,8 +1,7 @@
 'use client';
-import { Theme, Button, Callout } from '@radix-ui/themes';
+import { Theme, Button, Callout, Spinner } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
-import Form from 'next/form';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 
@@ -14,13 +13,15 @@ type Movie = {
   duration: number;
   age_rating: string;
   genre?: string[];
+  image_url: string;
 };
 
 export default function UpdateMoviePage(){
     const params = useParams();
     const movieId = params['update-movie-id'];
     const [movie, setMovie] = useState<Movie | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(true);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const router = useRouter();
 
@@ -30,13 +31,17 @@ export default function UpdateMoviePage(){
     const [duration, setDuration] = useState('');
     const [ageRating, setAgeRating] = useState('U');
     const [genre, setGenre] = useState('');
+    const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
     // Fetch movie details
     useEffect(() => {
         const fetchMovie = async () => {
+            setFetching(true);
             if (!movieId) {
                 console.warn("No movie ID found in params:", params);
-                setLoading(false);
+                setFetching(false);
                 return;
             }
 
@@ -48,23 +53,74 @@ export default function UpdateMoviePage(){
 
             if (error) {
                 console.error("Error fetching movie:", error);
+                setMovie(null);
             } else {
                 setMovie(data ?? null);
             }
-            setLoading(false);
             setMovieName(data?.movie_name || '');
             setDescription(data?.movie_desc || '');
             setYear(data?.year.toString() || '');
             setDuration(data?.duration.toString() || '');
             setAgeRating(data?.age_rating || 'U');
             setGenre(data?.genre ? data.genre.join(', ') : '');
+            if (data?.image_url) {
+                let imageUrl = data.image_url;
+                setExistingImageUrl(imageUrl);
+                setImagePreview(imageUrl);
+            }
+            setFetching(false);
         };
 
         fetchMovie();
     }, [movieId]);
 
+    // Clean up preview URL when component unmounts or image changes
+    useEffect(() => {
+        return () => {
+            if (imagePreview && imagePreview !== existingImageUrl) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview, existingImageUrl]);
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setImage(file);
+            
+            // Create preview URL
+            if (imagePreview && imagePreview !== existingImageUrl) {
+                URL.revokeObjectURL(imagePreview);
+            }
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
+
+    const uploadImage = async (file: File): Promise<string | null> => {
+        const filePath = `${file.name}`
+
+        const {error} = await supabase.storage.from("movie_image").upload(filePath, file, {upsert: true});
+
+        if (error) {
+            console.error("Error uploading image:", error.message);
+            return null;
+        }
+
+        const {data} = await supabase.storage.from("movie_image").getPublicUrl(filePath);
+
+        return data.publicUrl
+    }
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setLoading(true);
+
+        let imageUrl: string | null = existingImageUrl;
+        // Only upload if a new file was selected
+        if (image instanceof File) {
+            imageUrl = await uploadImage(image);
+        }
 
         // Validate inputs
         const newErrors: { [key: string]: string } = {};
@@ -78,6 +134,7 @@ export default function UpdateMoviePage(){
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
+            setLoading(false)
             return;
         }
 
@@ -93,19 +150,32 @@ export default function UpdateMoviePage(){
                     .split(",")
                     .map(g => g.trim())
                     .filter(g => g.length > 0),
+                image_url: imageUrl
             })
             .eq("movie_id", movieId);
 
         if (error) {
             console.error("Error updating movie:", error);
             setErrors({ general: "*Error updating movie. Please try again." });
+            setLoading(false);
         } else {
             router.push('/manager/movies?updateSuccess=1');
         }
 
     };
 
-    if (loading) return <p className="px-12 py-10">Loading...</p>;
+    // Show loading state while fetching
+    if (fetching) {
+        return (
+            <div className="py-10 px-12">
+                <Theme className="inline">
+                    <div className="flex items-center justify-center">
+                        <Spinner size="3" />
+                    </div>
+                </Theme>
+            </div>
+        );
+    }
 
     // Movie not found
     if (!movie) {
@@ -120,9 +190,9 @@ export default function UpdateMoviePage(){
     }
 
     const getInputClass = (field: string) =>
-    `border p-2 rounded-md ${
-        errors[field] ? 'border-red-500' : 'border-gray-300'
-    }`;
+        `border p-2 rounded-md focus:ring-2 focus:ring-blue-400 outline-none transition ${
+            errors[field] ? 'border-red-500 focus:ring-2 focus:ring-red-400' : 'border-gray-300 focus:ring-2 focus:ring-blue-400'
+        }`;
 
 
     return (
@@ -135,7 +205,7 @@ export default function UpdateMoviePage(){
                 </a>
                 <hr className="my-2 text-gray-300" />
                 <Theme className="inline">
-                    <Form action="/manager/movies" className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter" onSubmit={handleSubmit}>
+                    <form action="/manager/movies" className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter" onSubmit={handleSubmit}>
                         {/* Movie Name */}
                         <div className="flex flex-col gap-1">
                             <label>
@@ -229,13 +299,44 @@ export default function UpdateMoviePage(){
                             {errors.genre && <p className="text-red-500 text-sm">{errors.genre}</p>}
                         </div>
 
+                        <div className="flex flex-col gap-1">
+                            <label>Image<span className="text-red-500">*</span></label>
+                            <input 
+                                type="file"
+                                accept='image/*'
+                                onChange={handleFileChange}
+                                className={`${getInputClass("image")} file:cursor-pointer file:bg-gray-300 file:text-gray-800 file:text-base hover:file:bg-gray-200 file:rounded-sm file:px-2 file:mr-3`}
+                            />
+                            {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
+                            {imagePreview && (
+                                <div className="mt-2">
+                                    <img 
+                                        src={imagePreview} 
+                                        alt="Preview" 
+                                        className="max-w-xs max-h-64 rounded-md border border-gray-300 object-contain"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div></div>
+
                         <div className="flex items-end justify-self-end">
-                            <Button color="green" size="2" variant="solid" type="submit">
-                                <ArchiveIcon />
-                                Update Movie Details
+                            <Button color="green" size="2" variant="solid" type="submit" disabled={loading}>
+                                {loading ? (
+                                    <>
+                                        <Spinner/>
+                                        Updating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <ArchiveIcon />
+                                        Update Movie Details
+                                    </>
+                                )}
                             </Button>
                         </div>
-                    </Form>
+                    </form>
                 </Theme>
             </div>
         </div>
