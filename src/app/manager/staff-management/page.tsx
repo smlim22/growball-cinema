@@ -1,6 +1,6 @@
 'use client';
 import { Theme, Button, Callout, Flex } from '@radix-ui/themes';
-import { PlusIcon, Pencil2Icon, EyeOpenIcon, CheckCircledIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { PlusIcon, Pencil2Icon, EyeOpenIcon, CheckCircledIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,6 +24,9 @@ export default function StaffManagementPage(){
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
     const updated = searchParams.get('updated');
+
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const itemsPerPage = 10;
 
     const getRoleName = (level: number) => {
         switch (level) {
@@ -64,6 +67,49 @@ export default function StaffManagementPage(){
 
         fetchStaff();
     }, [searchQuery, selectedRole, selectedStatus])
+
+    // Pagination calculations
+    const totalPages = Math.ceil(staff.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedShowtimes = staff.slice(startIndex, endIndex);
+
+    // Generate page numbers to display
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+        
+        if (totalPages <= maxVisiblePages) {
+        // Show all pages if total is less than max visible
+        for (let i = 1; i <= totalPages; i++) {
+            pages.push(i);
+        }
+        } else {
+        // Show first page
+        pages.push(1);
+        
+        if (currentPage > 3) {
+            pages.push('...');
+        }
+        
+        // Show pages around current page
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+        
+        if (currentPage < totalPages - 2) {
+            pages.push('...');
+        }
+        
+        // Show last page
+        pages.push(totalPages);
+        }
+        
+        return pages;
+    };
 
     return (
         <div className="py-10 px-12">
@@ -202,6 +248,55 @@ export default function StaffManagementPage(){
                         )}
                     </tbody>
                 </table>
+
+                {staff.length > 0 && (
+                    <div className="flex items-center justify-between mt-4 font-inter">
+                        <div className="text-sm text-gray-600">
+                        Showing {startIndex + 1} to {Math.min(endIndex, staff.length)} of {staff.length} staff
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <Button
+                            color="gray"
+                            variant="soft"
+                            size="2"
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeftIcon />
+                            Previous
+                        </Button>
+                        
+                        <div className="flex items-center gap-1">
+                            {getPageNumbers().map((page, index) => (
+                            page === '...' ? (
+                                <span key={`ellipsis-${index}`} className="px-2 text-gray-500">...</span>
+                            ) : (
+                                <Button
+                                key={page}
+                                color={currentPage === page ? "blue" : "gray"}
+                                variant={currentPage === page ? "solid" : "soft"}
+                                size="2"
+                                onClick={() => setCurrentPage(page as number)}
+                                >
+                                {page}
+                                </Button>
+                            )
+                            ))}
+                        </div>
+                        
+                        <Button
+                            color="gray"
+                            variant="soft"
+                            size="2"
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                            <ChevronRightIcon />
+                        </Button>
+                        </div>
+                    </div>
+                )}
             </Theme>
         </div>
     )

@@ -2,7 +2,7 @@
 import { Theme, Button, Callout } from '@radix-ui/themes';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
-import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon, TrashIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { PlusIcon, CheckCircledIcon, Pencil2Icon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Fnb = {
@@ -19,6 +19,8 @@ export default function FnbPage(){
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedType, setSelectedType] = useState("All");
     const [availableTypes, setAvailableTypes] = useState<string[]>(["Food", "Beverages"]);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+     const itemsPerPage = 10;
 
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
@@ -57,6 +59,49 @@ export default function FnbPage(){
 
         setFilteredFnbItems(filtered);
     }, [searchTerm, selectedType, fnbItems]);
+
+      // Pagination calculations
+    const totalPages = Math.ceil(fnbItems.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedShowtimes = fnbItems.slice(startIndex, endIndex);
+
+    // Generate page numbers to display
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+        
+        if (totalPages <= maxVisiblePages) {
+        // Show all pages if total is less than max visible
+        for (let i = 1; i <= totalPages; i++) {
+            pages.push(i);
+        }
+        } else {
+        // Show first page
+        pages.push(1);
+        
+        if (currentPage > 3) {
+            pages.push('...');
+        }
+        
+        // Show pages around current page
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+        
+        if (currentPage < totalPages - 2) {
+            pages.push('...');
+        }
+        
+        // Show last page
+        pages.push(totalPages);
+        }
+        
+        return pages;
+    };
 
     return(
         <div className="font-inter py-10 px-12">
@@ -164,6 +209,55 @@ export default function FnbPage(){
                         )}
                     </tbody>
                 </table>
+                {/* Pagination Controls */}
+                {fnbItems.length > 0 && (
+                <div className="flex items-center justify-between mt-4 font-inter">
+                    <div className="text-sm text-gray-600">
+                    Showing {startIndex + 1} to {Math.min(endIndex, fnbItems.length)} of {fnbItems.length} FNB items
+                    </div>
+                    <div className="flex items-center gap-2">
+                    <Button
+                        color="gray"
+                        variant="soft"
+                        size="2"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeftIcon />
+                        Previous
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                        {getPageNumbers().map((page, index) => (
+                        page === '...' ? (
+                            <span key={`ellipsis-${index}`} className="px-2 text-gray-500">...</span>
+                        ) : (
+                            <Button
+                            key={page}
+                            color={currentPage === page ? "blue" : "gray"}
+                            variant={currentPage === page ? "solid" : "soft"}
+                            size="2"
+                            onClick={() => setCurrentPage(page as number)}
+                            >
+                            {page}
+                            </Button>
+                        )
+                        ))}
+                    </div>
+                    
+                    <Button
+                        color="gray"
+                        variant="soft"
+                        size="2"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                        <ChevronRightIcon />
+                    </Button>
+                    </div>
+                </div>
+                )}
             </Theme>
         </div>
     );

@@ -32,7 +32,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`fixed md:static top-0 left-0 h-full md:min-h-screen w-64 bg-signature-red text-white p-4 transform transition-transform duration-300 ease-in-out
+      className={`fixed md:sticky top-0 left-0 h-full md:min-h-screen w-64 bg-signature-red text-white p-4 transform transition-transform duration-300 ease-in-out
       ${isOpen ? "translate-x-0" : "-translate-x-full"} 
       md:translate-x-0 md:block z-50 flex flex-col`}
     >
