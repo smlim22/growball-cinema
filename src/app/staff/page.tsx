@@ -8,6 +8,7 @@ export default function StaffPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const today = new Date().toISOString().split("T")[0];
+  const [noOfPendingOrders, setNoOfPendingOrders] = useState<number>(0);
 
   useEffect(() => {
     const getUserName = async () => {
@@ -34,6 +35,18 @@ export default function StaffPage() {
     getUserName();
   });
 
+  useEffect(() => {
+    const getPendingOrders = async () => {
+      const { count, error } = await supabase
+        .from("order")
+        .select("*", { count: 'exact', head: true })
+        .eq("status", "Pending");
+
+        setNoOfPendingOrders(count ?? 0);
+    }
+    getPendingOrders();
+  })
+
   return (
     <div className="py-10 px-12 font-inter">
       <h1 className="text-2xl font-bold mb-4">Welcome, {name}</h1>
@@ -46,7 +59,7 @@ export default function StaffPage() {
         </div>
         <div className="inline-block bg-white p-3 rounded-md shadow-md">
           <h2 className="text-xl font-semibold my-4">Orders Pending</h2>
-          <p className="text-lg mb-4">0</p>
+          <p className="text-lg mb-4">{noOfPendingOrders}</p>
         </div>
       </div>
     </div>
