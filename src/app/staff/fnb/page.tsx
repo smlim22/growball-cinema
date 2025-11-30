@@ -22,8 +22,10 @@ export default function FNBStaffPage() {
     const [selectedSort, setSelectedSort] = useState("Newest");
     const [showViewDialog, setShowViewDialog] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<number | null>(null);
-    const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+    //const [showUpdateDialog, setShowUpdateDialog] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [showFailMessage, setShowFailMessage] = useState(false);
+
 
     // Format date (DD/MM/YYYY) and time (hh:mm AM/PM)
     const formatDate = (dateStr: string) => {
@@ -69,14 +71,59 @@ export default function FNBStaffPage() {
         fetchOrders();
     }, [fetchOrders]);
 
-    const handleUpdateSuccess = useCallback(() => {
+    // const handleUpdateSuccess = useCallback(() => {
+    //     fetchOrders();
+    //     setShowSuccessMessage(true);
+    //     // Auto-hide success message after 5 seconds
+    //     setTimeout(() => {
+    //         setShowSuccessMessage(false);
+    //     }, 5000);
+    // }, [fetchOrders]);
+
+    const handleUpdateSuccess = () => {
         fetchOrders();
         setShowSuccessMessage(true);
         // Auto-hide success message after 5 seconds
         setTimeout(() => {
             setShowSuccessMessage(false);
         }, 5000);
-    }, [fetchOrders]);
+    }
+
+    const handleUpdateFailed = () => {
+        fetchOrders();
+        setShowFailMessage(true);
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => {
+            setShowFailMessage(false);
+        }, 5000);
+    }
+
+    const handleUpdate = async (currentStatus: string, orderId: number) => {
+        let newStatus = "";
+
+        if (currentStatus == "Pending") {
+            newStatus = "Ready For Pickup"
+        } else if (currentStatus == "Ready For Pickup") {
+            newStatus = "Completed"
+        } else {
+            handleUpdateFailed();
+            return;
+        }
+
+        const { error } = await supabase
+            .from("order")
+            .update({
+                status: newStatus
+            })
+            .eq("order_id", orderId);
+        
+        if (error){
+            console.error("Error updating status:", error);
+            handleUpdateFailed();
+        } else {
+            handleUpdateSuccess();
+        }
+    }
 
     return (
         <div className="font-inter py-10 px-12">
@@ -89,6 +136,18 @@ export default function FNBStaffPage() {
                         </Callout.Icon>
                         <Callout.Text className="font-inter">
                             Order status has been updated successfully!
+                        </Callout.Text>
+                    </Callout.Root>
+                </Theme>
+            )}
+            {showFailMessage && (
+                <Theme className="inline">
+                    <Callout.Root color="red" size="2" variant="soft" className="mb-4 font-inter">
+                        <Callout.Icon>
+                            <CheckCircledIcon />
+                        </Callout.Icon>
+                        <Callout.Text className="font-inter">
+                            Order status update failed!
                         </Callout.Text>
                     </Callout.Root>
                 </Theme>
@@ -133,16 +192,29 @@ export default function FNBStaffPage() {
                                 <td className="py-3 px-6">{order.status}</td>
                                 <td className="py-3 px-6">
                                     <Flex gap="2">
-                                        <Button color="blue" size="2" variant="solid" onClick={() => {setSelectedOrder(order.order_id); setShowViewDialog(true);}}>
+                                        <Button 
+                                            color="blue" 
+                                            size="2" 
+                                            variant="solid" 
+                                            onClick={() => {setSelectedOrder(order.order_id); setShowViewDialog(true);}}
+                                        >
                                             <EyeOpenIcon /> View
                                         </Button>
-                                        <Button 
+                                        {/* <Button 
                                             color="amber" 
                                             size="2" variant="solid" 
                                             onClick={() => {setSelectedOrder(order.order_id); setShowUpdateDialog(true);}}
                                             disabled={order.status !== "Completed" ? false : true }
                                         >
                                             <Pencil2Icon /> Update Status
+                                        </Button> */}
+                                        <Button
+                                            color={order.status == "Pending" ? "amber" : "green"}
+                                            variant="solid"
+                                            disabled={order.status == "Cancelled" || order.status == "Completed"}
+                                            onClick={() => handleUpdate(order.status, order.order_id)}
+                                        >
+                                            {order.status == "Pending" ? "Allow For Pickup" : "Complete" }
                                         </Button>
                                     </Flex>
                                 </td>
@@ -169,7 +241,7 @@ export default function FNBStaffPage() {
                     orderId={selectedOrder}
                 />
 
-                <UpdateOrderDialog 
+                {/* <UpdateOrderDialog 
                     open={showUpdateDialog}
                     onOpenChange={(openState) => {
                         setShowUpdateDialog(openState);
@@ -179,7 +251,7 @@ export default function FNBStaffPage() {
                     }}
                     orderId={selectedOrder}
                     onUpdateSuccess={handleUpdateSuccess}
-                />
+                /> */}
             </Theme>
         </div>
     )

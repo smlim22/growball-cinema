@@ -4,10 +4,12 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { loginWithEmail, getUserAccessLevel } from './lib/auth'
 import Image from 'next/image'
+import { EyeOpenIcon, EyeClosedIcon } from "@radix-ui/react-icons";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -81,14 +83,21 @@ export default function LoginPage() {
 
             {/* Password */}
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               className="mb-4 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition"
             />
-
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-gray-600 hover:text-gray-900 absolute right-12 top-45 -translate-y-1/2"
+            >
+              {showPassword ? <EyeClosedIcon className='w-5 h-5' /> : <EyeOpenIcon className='w-5 h-5' />}
+            </button>
+            
             {/* Error Message */}
             {error && (
               <p className="text-red-500 text-sm mb-2 text-center">{error}</p>
