@@ -130,6 +130,7 @@ export default function UpdateMoviePage(){
         if (!duration || isNaN(Number(duration))) newErrors.duration = "Valid duration is required.";
         if (!ageRating) newErrors.ageRating = "Age rating is required.";
         if (!genre) newErrors.genre = "Genre is required.";
+        if (!image) newErrors.image = "*Image required";
 
         setErrors(newErrors);
 

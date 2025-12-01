@@ -1,7 +1,7 @@
 'use client';
 import { Theme, Button, Callout, Spinner } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ChangeEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 
@@ -11,6 +11,7 @@ type Fnb = {
     fnb_desc: string;
     type: string;
     price: number;
+    image_url: string;
 };
 
 export default function UpdateFnbItemPage() {
@@ -26,6 +27,9 @@ export default function UpdateFnbItemPage() {
     const [itemDesc, setItemDesc] = useState('');
     const [itemPrice, setItemPrice] = useState('');
     const [itemType, setItemType] = useState('');
+    const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchFnbItem = async () => {
@@ -49,6 +53,11 @@ export default function UpdateFnbItemPage() {
                 setItemDesc(data?.fnb_desc || '');
                 setItemPrice(data?.price?.toString() || '');
                 setItemType(data?.type || '');
+                if (data?.image_url) {
+                    let imageUrl = data.image_url;
+                    setExistingImageUrl(imageUrl);
+                    setImagePreview(imageUrl);
+                }
             }
             setLoading(false);
         };
@@ -56,8 +65,43 @@ export default function UpdateFnbItemPage() {
         fetchFnbItem();
     }, [fnbId]);
 
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setImage(file);
+            
+            // Create preview URL
+            if (imagePreview && imagePreview !== existingImageUrl) {
+                URL.revokeObjectURL(imagePreview);
+            }
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+        }
+    };
+
+    const uploadImage = async (file: File): Promise<string | null> => {
+        const filePath = `${file.name}`
+
+        const {error} = await supabase.storage.from("fnb_image").upload(filePath, file, {upsert: true});
+
+        if (error) {
+            console.error("Error uploading image:", error.message);
+            return null;
+        }
+
+        const {data} = await supabase.storage.from("fnb_image").getPublicUrl(filePath);
+
+        return data.publicUrl
+    }
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        let imageUrl: string | null = existingImageUrl;
+        // Only upload if a new file was selected
+        if (image instanceof File) {
+            imageUrl = await uploadImage(image);
+        }
 
         const newErrors: { [key: string]: string } = {};
 
@@ -65,6 +109,7 @@ export default function UpdateFnbItemPage() {
         if (!itemDesc) newErrors.itemDesc = "*Required field";
         if (!itemPrice) newErrors.itemPrice = "*Required field";
         if (!itemType) newErrors.itemType = "*Required field";
+        if (!image) newErrors.image = "*Image required";
 
         setErrors(newErrors);
         if (Object.keys(newErrors).length > 0) return;
@@ -77,7 +122,8 @@ export default function UpdateFnbItemPage() {
                 fnb_name: itemName,
                 fnb_desc: itemDesc,
                 type: itemType,
-                price: parseFloat(itemPrice)
+                price: parseFloat(itemPrice),
+                image_url: imageUrl
             })
             .eq("fnb_id", fnbId);
 
@@ -92,7 +138,9 @@ export default function UpdateFnbItemPage() {
     };
 
     const getInputClass = (field: string) =>
-        `border p-2 rounded-md ${errors[field] ? 'border-red-500' : 'border-gray-300'}`;
+        `border p-2 rounded-md focus:ring-2 focus:ring-blue-400 outline-none transition ${
+            errors[field] ? 'border-red-500 focus:ring-2 focus:ring-red-400' : 'border-gray-300 focus:ring-2 focus:ring-blue-400'
+        }`;
 
     // Loading state
     if (loading) {
@@ -188,9 +236,27 @@ export default function UpdateFnbItemPage() {
                             {errors.itemType && <p className="text-red-500 text-sm">{errors.itemType}</p>}
                         </div>
 
-                        <div></div>
+                        <div className="flex flex-col gap-1">
+                            <label>Image<span className="text-red-500">*</span></label>
+                            <input 
+                                type="file"
+                                accept='image/*'
+                                onChange={handleFileChange}
+                                className={`${getInputClass("image")} file:cursor-pointer file:bg-gray-300 file:text-gray-800 file:text-base hover:file:bg-gray-200 file:rounded-sm file:px-2 file:mr-3`}
+                            />
+                            {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
+                            {imagePreview && (
+                                <div className="mt-2">
+                                    <img 
+                                        src={imagePreview} 
+                                        alt="Preview" 
+                                        className="max-w-xs max-h-64 rounded-md border border-gray-300 object-contain"
+                                    />
+                                </div>
+                            )}
+                        </div>
 
-                        <div className="justify-self-end">
+                        <div className="flex items-end justify-self-end">
                             <Button color="green" size="2" variant="solid" type="submit" disabled={submitting}>
                                 {submitting ? (
                                     <>

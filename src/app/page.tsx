@@ -60,9 +60,6 @@ export default function LoginPage() {
         {/* Title */}
         <h1 className="text-2xl md:text-3xl font-bold text-center leading-tight">
           Cinema Ticketing Management System
-          <span className="block text-lg text-gray-700 font-medium">
-            (Growball Cinemax)
-          </span>
         </h1>
 
         {/* Login Card */}

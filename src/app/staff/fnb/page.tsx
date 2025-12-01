@@ -2,10 +2,10 @@
 import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
-import { EyeOpenIcon, Pencil2Icon, CheckCircledIcon } from '@radix-ui/react-icons';
+import { EyeOpenIcon, CheckCircledIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import ViewOrderDialog from '@/app/components/ViewOrderDialog';
-import UpdateOrderDialog from '@/app/components/UpdateOrderDialog';
+//import UpdateOrderDialog from '@/app/components/UpdateOrderDialog';
 
 type Order = {
     order_id: number;
