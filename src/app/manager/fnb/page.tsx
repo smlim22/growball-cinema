@@ -20,7 +20,7 @@ export default function FnbPage(){
     const [selectedType, setSelectedType] = useState("All");
     const [availableTypes, setAvailableTypes] = useState<string[]>(["Food", "Beverages"]);
     const [currentPage, setCurrentPage] = useState<number>(1);
-     const itemsPerPage = 10;
+    const itemsPerPage = 10;
 
     const searchParams = useSearchParams();
     const success = searchParams.get('success');

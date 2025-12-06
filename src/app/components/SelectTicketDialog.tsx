@@ -196,15 +196,20 @@ export default function SelectTicketDialog({ onBack, onAddItem }: SelectTicketDi
           </a>
           <h2 className="text-lg font-bold mb-3">Select Movie</h2>
           <ul>
-            {movies.map(m => (
-              <li
-                key={m.movie_id}
-                onClick={() => { setSelectedMovie(m); fetchShowtimes(m.movie_id); }}
-                className="p-3 border border-gray-200 rounded-md cursor-pointer mb-2 hover:bg-gray-100 transition"
-              >
-                {m.movie_name}
-              </li>
-            ))}
+            {movies.length > 0 ? (
+              movies.map(m => (
+                <li
+                  key={m.movie_id}
+                  onClick={() => { setSelectedMovie(m); fetchShowtimes(m.movie_id); }}
+                  className="p-3 border border-gray-200 rounded-md cursor-pointer mb-2 hover:bg-gray-100 transition"
+                >
+                  {m.movie_name}
+                </li>
+              ))
+            ) : (
+              <p className='text-gray-600 text-center'>No movies with available</p>
+            )}
+            
           </ul>
         </>
       )}
@@ -216,22 +221,26 @@ export default function SelectTicketDialog({ onBack, onAddItem }: SelectTicketDi
           </a>
           <h2 className="text-lg font-bold my-3">Select Showtime</h2>
 
-          {Object.keys(groupedShowtimes).map(date => (
-            <div key={date} className="mb-4">
-              <h3 className="font-semibold text-gray-800 mb-2">{formatDate(date)}</h3>
-              <div className="flex flex-wrap gap-2">
-                {groupedShowtimes[date].map((st: any) => (
-                  <button
-                    key={st.showtime_id}
-                    onClick={() => { setSelectedShowtime(st); fetchSeats(st.showtime_id); }}
-                    className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
-                  >
-                    {formatTime(st.time)}
-                  </button>
-                ))}
+          {Object.keys(groupedShowtimes).length > 0 ? (
+            Object.keys(groupedShowtimes).map(date => (
+              <div key={date} className="mb-4">
+                <h3 className="font-semibold text-gray-800 mb-2">{formatDate(date)}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {groupedShowtimes[date].map((st: any) => (
+                    <button
+                      key={st.showtime_id}
+                      onClick={() => { setSelectedShowtime(st); fetchSeats(st.showtime_id); }}
+                      className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
+                    >
+                      {formatTime(st.time)}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className='text-gray-600 text-center'>No showtimes available</p>
+          )}
         </>
       )}
 
