@@ -269,11 +269,197 @@ export async function generateTicketPDF(
   // Footer
   doc.setFontSize(8);
   doc.setFont('helvetica', 'italic');
-  doc.text('Please present this ticket at the cinema.', pageWidth / 2, yPos, { align: 'center' });
+  doc.text('Please present this ticket at the entrance hall.', pageWidth / 2, yPos, { align: 'center' });
   yPos += 5;
   doc.text('Thank you for choosing Growball Cinemax!', pageWidth / 2, yPos, { align: 'center' });
 
   // Save PDF
   doc.save(`Ticket_${ticketId}.pdf`);
+}
+
+// Interface for ticket sales summary data
+export interface TicketSalesSummaryData {
+  date: string;
+  count: number;
+  revenue: number;
+  details: {
+    movieName: string;
+    showtime: string;
+    date: string;
+    tickets: number;
+    revenue: number;
+  }[];
+}
+
+// Interface for table row data
+export interface TicketSalesTableRow {
+  date: string;
+  movieName: string;
+  tickets: number;
+  revenue: number;
+}
+
+// Generate Ticket Sales Summary PDF
+export async function generateTicketSalesSummaryPDF(
+  startDate: string,
+  endDate: string,
+  salesData: TicketSalesSummaryData[]
+): Promise<void> {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 20;
+  let yPos = margin;
+
+  // Header
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('GROWBALL CINEMAX', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 10;
+
+  doc.setFontSize(16);
+  doc.text('TICKET SALES SUMMARY', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 15;
+
+  // Date Range
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  const startDateFormatted = formatDate(new Date(startDate));
+  const endDateFormatted = formatDate(new Date(endDate));
+  doc.text(`Period: ${startDateFormatted} to ${endDateFormatted}`, margin, yPos);
+  yPos += 8;
+
+  // Generated Date and Time
+  const now = new Date();
+  doc.setFontSize(10);
+  doc.text(`Generated: ${formatDate(now)} at ${formatTime(now)}`, margin, yPos);
+  yPos += 15;
+
+  // Flatten data into table rows
+  const tableRows: TicketSalesTableRow[] = [];
+  salesData.forEach((dayData) => {
+    if (dayData.details && dayData.details.length > 0) {
+      dayData.details.forEach((detail) => {
+        tableRows.push({
+          date: detail.date,
+          movieName: detail.movieName,
+          tickets: detail.tickets,
+          revenue: detail.revenue
+        });
+      });
+    }
+  });
+
+  // Sort by date
+  tableRows.sort((a, b) => a.date.localeCompare(b.date));
+
+  // Calculate total revenue
+  const totalRevenue = tableRows.reduce((sum, row) => sum + row.revenue, 0);
+
+  // Table setup
+  const tableStartY = yPos;
+  const rowHeight = 8;
+
+  // Adjusted column widths for better fitting
+  const colWidths = {
+    date: 30,
+    movieName: 95,
+    tickets: 25,
+    revenue: 30
+  };
+
+  const tableStartX = margin;
+  const ticketsX = pageWidth - margin - colWidths.revenue - colWidths.tickets;
+  const revenueX = pageWidth - margin;
+
+  // Table header
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  yPos += 5;
+
+  // Header top border
+  doc.setLineWidth(0.25);
+  doc.line(tableStartX, yPos - 4, pageWidth - margin, yPos - 4);
+
+  yPos += 2;
+  // Header labels
+  doc.text('Date', tableStartX, yPos);
+  doc.text('Movie Name', tableStartX + colWidths.date, yPos);
+  doc.text('No. Of Ticket Sold', ticketsX, yPos, { align: 'center' });
+  doc.text('Revenue (RM)', revenueX, yPos, { align: 'right' });
+
+  yPos += 3;
+  // Header bottom border
+  doc.line(tableStartX, yPos, pageWidth - margin, yPos);
+  yPos += 7;
+
+  // Table rows
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+
+  tableRows.forEach((row) => {
+    // Page break check
+    if (yPos > doc.internal.pageSize.getHeight() - 30) {
+      doc.addPage();
+      yPos = margin + 5;
+
+      // Redraw header
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.line(tableStartX, yPos - 4, pageWidth - margin, yPos - 4);
+      yPos += 2;
+      doc.text('Date', tableStartX, yPos);
+      doc.text('Movie Name', tableStartX + colWidths.date, yPos);
+      doc.text('No. Of Ticket Sold', ticketsX, yPos, { align: 'center' });
+      doc.text('Revenue (RM)', revenueX, yPos, { align: 'right' });
+      yPos += 3;
+      doc.line(tableStartX, yPos, pageWidth - margin, yPos);
+      yPos += 7;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+    }
+
+    const dateFormatted = formatDate(new Date(row.date));
+    doc.text(dateFormatted, tableStartX, yPos);
+
+    // Movie name truncation
+    let movieName = row.movieName;
+    const maxMovieNameWidth = colWidths.movieName - 4;
+    if (doc.getTextWidth(movieName) > maxMovieNameWidth) {
+      while (doc.getTextWidth(movieName + '...') > maxMovieNameWidth && movieName.length > 0) {
+        movieName = movieName.slice(0, -1);
+      }
+      movieName += '...';
+    }
+    doc.text(movieName, tableStartX + colWidths.date, yPos);
+
+    // Numeric values aligned with headers
+    doc.text(row.tickets.toString(), ticketsX, yPos, { align: 'center' });
+    doc.text(row.revenue.toFixed(2), revenueX, yPos, { align: 'right' });
+
+    yPos += rowHeight;
+  });
+
+  // Bottom table border
+  doc.setLineWidth(0.25);
+  doc.line(tableStartX, yPos, pageWidth - margin, yPos);
+  yPos += 7;
+
+  // Total Revenue Section
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Total Revenue (RM): ${totalRevenue.toFixed(2)}`, pageWidth - margin, yPos, { align: 'right' });
+  yPos += 5;
+
+  doc.line(tableStartX, yPos, pageWidth - margin, yPos);
+
+  // Footer
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  doc.text('This is an automated report generated by Growball Cinemax Management System.', 
+    pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+
+  // Save PDF
+  const filename = `Ticket_Sales_Summary_${startDate}_to_${endDate}.pdf`;
+  doc.save(filename);
 }
 

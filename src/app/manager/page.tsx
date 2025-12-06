@@ -7,6 +7,7 @@ import { FileIcon } from "@radix-ui/react-icons";
 import { MoveRight } from "lucide-react";
 import TicketChart from "@/app/components/TicketChart";
 import FNBChart from "../components/FNBChart";
+import { generateTicketSalesReportPDF } from "@/app/utils/ticketSalesReport";
 
 export default function ManagerPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function ManagerPage() {
   const [endDateTicket, setEndDateTicket] = useState<string>("");
   const [startDateFNB, setStartDateFNB] = useState<string>("");
   const [endDateFNB, setEndDateFNB] = useState<string>("");
+  const [isGeneratingTicketReport, setIsGeneratingTicketReport] = useState(false);
 
   useEffect(() => {
     const getUserName = async () => {
@@ -80,6 +82,23 @@ export default function ManagerPage() {
     setEndDateFNB(endFormatted);
   }, []);
 
+  const handleDownloadTicketReport = async () => {
+    if (!startDateTicket || !endDateTicket) {
+      alert('Please select a date range');
+      return;
+    }
+
+    setIsGeneratingTicketReport(true);
+    try {
+      await generateTicketSalesReportPDF(startDateTicket, endDateTicket);
+    } catch (error) {
+      console.error('Error generating report:', error);
+      alert('Failed to generate report. Please try again.');
+    } finally {
+      setIsGeneratingTicketReport(false);
+    }
+  };
+
   return (
     <div className="py-10 px-12 font-inter">
       <h1 className="text-2xl font-bold mb-4">Welcome, {name}</h1>
@@ -130,8 +149,10 @@ export default function ManagerPage() {
             <Button
               variant="solid"
               color="green"
+              onClick={handleDownloadTicketReport}
+              disabled={isGeneratingTicketReport || !startDateTicket || !endDateTicket}
             >
-              <FileIcon/> Download Detailed Report
+              <FileIcon/> {isGeneratingTicketReport ? 'Generating...' : 'Download Detailed Report'}
             </Button>
           </Theme>
         </div>

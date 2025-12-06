@@ -141,6 +141,7 @@ export async function processOrder(
           {
             showtime_id: ticketItem.showtimeId,
             cust_id: null, // POS tickets might not have a customer
+            total_price: ticketItem.price, // Total price for this ticket
           },
         ])
         .select('ticket_id')
