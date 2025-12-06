@@ -8,6 +8,7 @@ import { MoveRight } from "lucide-react";
 import TicketChart from "@/app/components/TicketChart";
 import FNBChart from "../components/FNBChart";
 import { generateTicketSalesReportPDF } from "@/app/utils/ticketSalesReport";
+import { generateFNBSalesReportPDF } from "@/app/utils/fnbSalesReport";
 
 export default function ManagerPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function ManagerPage() {
   const [startDateFNB, setStartDateFNB] = useState<string>("");
   const [endDateFNB, setEndDateFNB] = useState<string>("");
   const [isGeneratingTicketReport, setIsGeneratingTicketReport] = useState(false);
+  const [isGeneratingFNBReport, setIsGeneratingFNBReport] = useState(false);
 
   useEffect(() => {
     const getUserName = async () => {
@@ -96,6 +98,23 @@ export default function ManagerPage() {
       alert('Failed to generate report. Please try again.');
     } finally {
       setIsGeneratingTicketReport(false);
+    }
+  };
+
+  const handleDownloadFNBReport = async () => {
+    if (!startDateFNB || !endDateFNB) {
+      alert('Please select a date range');
+      return;
+    }
+
+    setIsGeneratingFNBReport(true);
+    try {
+      await generateFNBSalesReportPDF(startDateFNB, endDateFNB);
+    } catch (error) {
+      console.error('Error generating report:', error);
+      alert('Failed to generate report. Please try again.');
+    } finally {
+      setIsGeneratingFNBReport(false);
     }
   };
 
@@ -186,8 +205,10 @@ export default function ManagerPage() {
             <Button
               variant="solid"
               color="green"
+              onClick={handleDownloadFNBReport}
+              disabled={isGeneratingFNBReport || !startDateFNB || !endDateFNB}
             >
-              <FileIcon/> Download Detailed Report
+              <FileIcon/> {isGeneratingFNBReport ? 'Generating...' : 'Download Detailed Report'}
             </Button>
           </Theme>
         </div>
