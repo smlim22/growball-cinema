@@ -142,6 +142,7 @@ export default function AddFnbItemPage(){
                             <select className={getInputClass("itemType")} value={itemType} onChange={(e) => setItemType(e.target.value)}>
                                 <option value="Food">Food</option>
                                 <option value="Beverages">Beverages</option>
+                                <option value="Combo">Combo</option>
                             </select>
                             {errors.itemType && <p className="text-red-500 text-sm">{errors.itemType}</p>}
                         </div>

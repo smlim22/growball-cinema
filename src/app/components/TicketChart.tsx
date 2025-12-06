@@ -188,7 +188,7 @@ export default function TicketChart({startDate, endDate} : TicketChartProps) {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-86 max-w-108">
                 <p>Loading chart data...</p>
             </div>
         );
@@ -196,7 +196,7 @@ export default function TicketChart({startDate, endDate} : TicketChartProps) {
 
     if (!startDate || !endDate) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-86 max-w-108">
                 <p>Please select a date range to view ticket sales</p>
             </div>
         );
@@ -204,7 +204,7 @@ export default function TicketChart({startDate, endDate} : TicketChartProps) {
 
     if (salesData.length === 0) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-86 max-w-108">
                 <p>No ticket sales data found for the selected date range</p>
             </div>
         );

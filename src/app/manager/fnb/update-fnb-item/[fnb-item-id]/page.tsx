@@ -232,6 +232,7 @@ export default function UpdateFnbItemPage() {
                                 <option value="">Select Type</option>
                                 <option value="Food">Food</option>
                                 <option value="Beverages">Beverages</option>
+                                <option value="Combo">Combo</option>
                             </select>
                             {errors.itemType && <p className="text-red-500 text-sm">{errors.itemType}</p>}
                         </div>

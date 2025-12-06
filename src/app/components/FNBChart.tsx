@@ -107,7 +107,7 @@ export default function FNBChart({startDate, endDate} : FNBChartProps){
         const colors = [
             'rgba(54, 162, 235, 0.8)',  // Blue for Food
             'rgba(255, 99, 132, 0.8)',  // Red for Beverages
-            'rgba(255, 206, 86, 0.8)',  // Yellow
+            'rgba(255, 206, 86, 0.8)',  // Yellow for Combo
             'rgba(75, 192, 192, 0.8)',  // Teal
             'rgba(153, 102, 255, 0.8)', // Purple
         ];
@@ -157,7 +157,7 @@ export default function FNBChart({startDate, endDate} : FNBChartProps){
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-86 max-w-108">
                 <p>Loading chart data...</p>
             </div>
         );
@@ -165,7 +165,7 @@ export default function FNBChart({startDate, endDate} : FNBChartProps){
 
     if (!startDate || !endDate) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-86 max-w-108">
                 <p>Please select a date range to view FNB sales</p>
             </div>
         );
@@ -173,7 +173,7 @@ export default function FNBChart({startDate, endDate} : FNBChartProps){
 
     if (salesData.length === 0) {
         return (
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-86 max-w-108">
                 <p>No FNB sales data found for the selected date range</p>
             </div>
         );
