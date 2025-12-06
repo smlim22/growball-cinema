@@ -91,19 +91,61 @@ export default function TicketChart({startDate, endDate} : TicketChartProps) {
                     return;
                 }
 
+                if (!ticketsData || ticketsData.length === 0) {
+                    // No tickets, fill with zeros
+                    const filledSales: TicketSalesData[] = [];
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    
+                    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                        filledSales.push({
+                            date: d.toISOString().split('T')[0],
+                            count: 0
+                        });
+                    }
+                    setSalesData(filledSales);
+                    setLoading(false);
+                    return;
+                }
+
+                // Get all ticket IDs
+                const ticketIds = ticketsData.map(t => t.ticket_id);
+
+                // Fetch all seat_taken entries for these tickets (where status = 'booked')
+                const { data: seatTakenData, error: seatTakenError } = await supabase
+                    .from('seat_taken')
+                    .select('ticket_id')
+                    .in('ticket_id', ticketIds)
+                    .eq('status', 'booked');
+
+                if (seatTakenError) {
+                    console.error('Error fetching seat_taken:', seatTakenError);
+                    setLoading(false);
+                    return;
+                }
+
+                // Create a map of ticket_id to showtime_id
+                const ticketToShowtime: { [key: number]: number } = {};
+                ticketsData.forEach(ticket => {
+                    ticketToShowtime[ticket.ticket_id] = ticket.showtime_id;
+                });
+
                 // Create a map of showtime_id to date
                 const showtimeToDate: { [key: number]: string } = {};
                 showtimesData.forEach(st => {
                     showtimeToDate[st.showtime_id] = st.date;
                 });
 
-                // Group tickets by date
+                // Group seats taken by date
                 const salesByDate: { [key: string]: number } = {};
                 
-                ticketsData?.forEach((ticket: any) => {
-                    const date = showtimeToDate[ticket.showtime_id];
-                    if (date) {
-                        salesByDate[date] = (salesByDate[date] || 0) + 1;
+                seatTakenData?.forEach((seatTaken: any) => {
+                    const showtimeId = ticketToShowtime[seatTaken.ticket_id];
+                    if (showtimeId) {
+                        const date = showtimeToDate[showtimeId];
+                        if (date) {
+                            salesByDate[date] = (salesByDate[date] || 0) + 1;
+                        }
                     }
                 });
 

@@ -462,4 +462,3 @@ export async function generateTicketSalesSummaryPDF(
   const filename = `Ticket_Sales_Summary_${startDate}_to_${endDate}.pdf`;
   doc.save(filename);
 }
-
