@@ -21,3 +21,8 @@ body {
 button {
   cursor: pointer;
 }
+
+.bg-signature-red-linear-vertical {
+  background: #691716;
+  background: linear-gradient(180deg,rgba(105, 23, 22, 1) 67%, rgba(63, 12, 11, 1) 100%);
+}
