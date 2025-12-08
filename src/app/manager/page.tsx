@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Theme, Button } from '@radix-ui/themes';
 import { FileIcon } from "@radix-ui/react-icons";
-import { MoveRight } from "lucide-react";
+import { SquareArrowOutUpRight } from "lucide-react";
 import TicketChart from "@/app/components/TicketChart";
 import FNBChart from "../components/FNBChart";
 import { generateTicketSalesReportPDF } from "@/app/utils/ticketSalesReport";
@@ -121,26 +121,35 @@ export default function ManagerPage() {
   return (
     <div className="py-10 px-12 font-inter">
       <h1 className="text-2xl font-bold mb-4">Welcome, {name}</h1>
-      <div className="flex gap-4 mb-8">
-        <div className="inline-block bg-white p-3 rounded-md shadow-md">
-          <h2 className="text-xl font-semibold my-4">Today's Running Showtime</h2>
-          <p className="text-lg mb-4">{noOfShowtimes}</p>
+      <div className="flex gap-4 mb-8 flex-col md:flex-row">
+        <div className="flex flex-col bg-white px-6 py-5 gap-5 rounded-2xl shadow-lg w-full md:w-1/3">
+          <h2 className="text-xl font-bold">Today's Running Showtime</h2>
+          <div className="text-3xl font-semibold text-center">
+            {noOfShowtimes}
+          </div>
         </div>
-        <div className="inline-block bg-white p-3 rounded-md shadow-md">
-          <h2 className="text-xl font-semibold my-4">Complaints Reported Today</h2>
-          <p className="flex justify-between items-center text-lg mb-4">
-            0 
-            <span> 
-              <MoveRight className="cursor-pointer" onClick={() => router.push("/manager/feedback-complaint")}/>
-            </span> 
-          </p>
+        <div 
+          className="cursor-pointer flex flex-col bg-white px-6 py-5 gap-5 rounded-2xl shadow-lg w-full md:w-1/3"
+          onClick={() => router.push("/manager/feedback-complaint")}
+        >
+          <h2 className="text-xl font-bold flex items-center gap-3">
+            Complaints Reported Today
+            <SquareArrowOutUpRight 
+              size={20}
+              className="cursor-pointer" 
+              onClick={() => router.push("/manager/feedback-complaint")}
+            />  
+          </h2>
+          <div className="text-3xl font-semibold text-center">
+            0
+          </div>
         </div>
       </div>
       <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      <div className="flex gap-4 flex-row">
-        <div className="bg-white p-4 rounded-md shadow-md">
-          <div className="flex flex-col gap-2 mb-4">
-            <h2 className="text-xl text-start font-bold">Ticket Sales Summary</h2>
+      <div className="flex gap-4 flex-col md:flex-row">
+        <div className="bg-white px-6 py-5 rounded-2xl shadow-lg w-full md:w-1/2">
+          <div className="flex flex-col gap-5 mb-4">
+            <h2 className="text-xl font-bold">Ticket Sales Summary</h2>
             <div className="flex gap-4">
               <div className="flex gap-2 items-center">
                 <label>From:</label>
@@ -175,9 +184,9 @@ export default function ManagerPage() {
             </Button>
           </Theme>
         </div>
-        <div className="bg-white p-4 rounded-md shadow-md">
-          <div className="flex flex-col gap-2 mb-4">
-            <h2 className="text-xl text-start font-bold">F&B Sales Summary</h2>
+        <div className="bg-white px-6 py-5 rounded-2xl shadow-lg w-full md:w-1/2">
+          <div className="flex flex-col gap-5 mb-4">
+            <h2 className="text-xl font-bold">F&B Sales Summary</h2>
             <div className="flex gap-4">
               <div className="flex gap-2 items-center">
                 <label>From:</label>
