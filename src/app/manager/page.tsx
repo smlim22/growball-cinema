@@ -119,7 +119,7 @@ export default function ManagerPage() {
   };
 
   return (
-    <div className="py-10 px-12 font-inter">
+    <div className="py-10 px-6 md:px-12 font-inter">
       <h1 className="text-2xl font-bold mb-4">Welcome, {name}</h1>
       <div className="flex gap-4 mb-8 flex-col md:flex-row">
         <div className="flex flex-col bg-white px-6 py-5 gap-5 rounded-2xl shadow-lg w-full md:w-1/3">
