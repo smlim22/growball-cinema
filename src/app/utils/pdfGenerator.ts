@@ -489,7 +489,7 @@ export async function generateFNBSalesSummaryPDF(
   yPos += 10;
 
   doc.setFontSize(16);
-  doc.text('FNB SALES SUMMARY', pageWidth / 2, yPos, { align: 'center' });
+  doc.text('F&B SALES SUMMARY', pageWidth / 2, yPos, { align: 'center' });
   yPos += 15;
 
   // Date Range

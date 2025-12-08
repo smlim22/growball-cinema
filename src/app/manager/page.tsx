@@ -177,7 +177,7 @@ export default function ManagerPage() {
         </div>
         <div className="bg-white p-4 rounded-md shadow-md">
           <div className="flex flex-col gap-2 mb-4">
-            <h2 className="text-xl text-start font-bold">FNB Sales Summary</h2>
+            <h2 className="text-xl text-start font-bold">F&B Sales Summary</h2>
             <div className="flex gap-4">
               <div className="flex gap-2 items-center">
                 <label>From:</label>

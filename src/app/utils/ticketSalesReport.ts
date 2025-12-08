@@ -54,6 +54,40 @@ export async function generateTicketSalesReportPDF(
       throw new Error('Failed to fetch tickets data');
     }
 
+    if (!ticketsData || ticketsData.length === 0) {
+      // No tickets, create empty report
+      const emptyData: TicketSalesSummaryData[] = [];
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        emptyData.push({
+          date: d.toISOString().split('T')[0],
+          count: 0,
+          revenue: 0,
+          details: []
+        });
+      }
+      
+      await generateTicketSalesSummaryPDF(startDate, endDate, emptyData);
+      return;
+    }
+
+    // Get all ticket IDs
+    const ticketIds = ticketsData.map(t => t.ticket_id);
+
+    // Fetch all seat_taken entries for these tickets (where status = 'booked')
+    const { data: seatTakenData, error: seatTakenError } = await supabase
+      .from('seat_taken')
+      .select('ticket_id')
+      .in('ticket_id', ticketIds)
+      .eq('status', 'booked');
+
+    if (seatTakenError) {
+      console.error('Error fetching seat_taken:', seatTakenError);
+      throw new Error('Failed to fetch seat_taken data');
+    }
+
     // Fetch movie names
     const movieIds = [...new Set(showtimesData.map(st => st.movie_id))];
     const { data: moviesData, error: moviesError } = await supabase
@@ -78,16 +112,41 @@ export async function generateTicketSalesReportPDF(
       showtimeMap[st.showtime_id] = st;
     });
 
-    // Group tickets by showtime - count and sum revenue
-    const ticketsByShowtime: { [key: number]: { count: number; revenue: number } } = {};
+    // Create a map of ticket_id to showtime_id and total_price
+    const ticketToShowtime: { [key: number]: { showtimeId: number; totalPrice: number } } = {};
+    ticketsData.forEach(ticket => {
+      ticketToShowtime[ticket.ticket_id] = {
+        showtimeId: ticket.showtime_id,
+        totalPrice: ticket.total_price || 0
+      };
+    });
+
+    // Group seats taken and revenue by showtime
+    // Count seats taken per showtime, sum revenue from tickets per showtime
+    const salesByShowtime: { [key: number]: { seatCount: number; revenue: number } } = {};
     
-    ticketsData?.forEach((ticket: any) => {
-      if (!ticketsByShowtime[ticket.showtime_id]) {
-        ticketsByShowtime[ticket.showtime_id] = { count: 0, revenue: 0 };
+    // Initialize all showtimes
+    showtimeIds.forEach(showtimeId => {
+      salesByShowtime[showtimeId] = { seatCount: 0, revenue: 0 };
+    });
+
+    // Count seats taken per showtime
+    seatTakenData?.forEach((seatTaken: any) => {
+      const ticketInfo = ticketToShowtime[seatTaken.ticket_id];
+      if (ticketInfo) {
+        if (!salesByShowtime[ticketInfo.showtimeId]) {
+          salesByShowtime[ticketInfo.showtimeId] = { seatCount: 0, revenue: 0 };
+        }
+        salesByShowtime[ticketInfo.showtimeId].seatCount++;
       }
-      ticketsByShowtime[ticket.showtime_id].count++;
-      // Sum up total_price from each ticket
-      ticketsByShowtime[ticket.showtime_id].revenue += ticket.total_price || 0;
+    });
+
+    // Sum revenue from tickets per showtime (each ticket's total_price counted once per ticket)
+    ticketsData?.forEach((ticket: any) => {
+      if (!salesByShowtime[ticket.showtime_id]) {
+        salesByShowtime[ticket.showtime_id] = { seatCount: 0, revenue: 0 };
+      }
+      salesByShowtime[ticket.showtime_id].revenue += ticket.total_price || 0;
     });
 
     // Group by date
@@ -107,7 +166,7 @@ export async function generateTicketSalesReportPDF(
     }
 
     // Process each showtime
-    Object.entries(ticketsByShowtime).forEach(([showtimeIdStr, ticketData]) => {
+    Object.entries(salesByShowtime).forEach(([showtimeIdStr, salesData]) => {
       const showtimeId = parseInt(showtimeIdStr);
       const showtime = showtimeMap[showtimeId];
       
@@ -115,8 +174,8 @@ export async function generateTicketSalesReportPDF(
 
       const date = showtime.date;
       const movieName = movieMap[showtime.movie_id] || 'Unknown Movie';
-      const totalTickets = ticketData.count;
-      const revenue = ticketData.revenue; // Use actual total_price from tickets
+      const totalSeats = salesData.seatCount; // Count of seats taken
+      const revenue = salesData.revenue; // Sum of total_price from tickets
 
       if (!salesByDate[date]) {
         salesByDate[date] = {
@@ -127,13 +186,13 @@ export async function generateTicketSalesReportPDF(
         };
       }
 
-      salesByDate[date].count += totalTickets;
+      salesByDate[date].count += totalSeats;
       salesByDate[date].revenue += revenue;
       salesByDate[date].details.push({
         movieName,
         showtime: showtime.time,
         date: showtime.date,
-        tickets: totalTickets,
+        tickets: totalSeats, // This now represents seats taken (tickets sold)
         revenue
       });
     });

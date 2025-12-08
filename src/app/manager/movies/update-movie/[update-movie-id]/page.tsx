@@ -130,7 +130,7 @@ export default function UpdateMoviePage(){
         if (!duration || isNaN(Number(duration))) newErrors.duration = "Valid duration is required.";
         if (!ageRating) newErrors.ageRating = "Age rating is required.";
         if (!genre) newErrors.genre = "Genre is required.";
-        if (!image) newErrors.image = "*Image required";
+        // if (!image) newErrors.image = "*Image required";
 
         setErrors(newErrors);
 
@@ -308,7 +308,6 @@ export default function UpdateMoviePage(){
                                 onChange={handleFileChange}
                                 className={`${getInputClass("image")} file:cursor-pointer file:bg-gray-300 file:text-gray-800 file:text-base hover:file:bg-gray-200 file:rounded-sm file:px-2 file:mr-3`}
                             />
-                            {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
                             {imagePreview && (
                                 <div className="mt-2">
                                     <img 
