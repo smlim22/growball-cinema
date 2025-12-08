@@ -1,8 +1,18 @@
 ## Info
-This project uses Supabase cloud database.
+This project uses Supabase cloud database and Node.js.
 Inside the database folder, you'll find the schema, function and triggers needed to ensure the project is fully operational.
 Enable 'pg_cron' extensions for function automation.
-Testing, hope i didn't mess up git
+
+## User Accounts
+If the supabase account is still alive, proceed with login with user accounts below
+
+Manager
+Email: rexlim8221@protonmail.com
+Password: manager123
+
+Staff
+Email: rexlim04@gmail.com
+Password: staff123
 
 ## NextJs Info
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
