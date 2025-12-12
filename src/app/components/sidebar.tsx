@@ -3,6 +3,7 @@ import Image from "next/image";
 import { X, User, LogOut } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Theme, Avatar, Text } from "@radix-ui/themes";
+import Link from "next/link";
 
 interface SidebarLink {
   href: string;
@@ -59,14 +60,15 @@ export default function Sidebar({
       <ul className="space-y-1 font-medium mt-2 md:mt-0 overflow-y-auto">
         {links.map((link, index) => (
           <li key={index}>
-            <a
-              href={link.href}
-              className="flex items-center rounded gap-2 py-3 px-2 text-base font-normal text-white hover:bg-signature-red-hover transition"
-              onClick={() => setIsOpen(false)}
-            >
-              {link.icon}
-              {link.label}
-            </a>
+            <Link href={link.href}>
+              <span
+                className="flex items-center rounded gap-2 py-3 px-2 text-base font-normal text-white hover:bg-signature-red-hover transition"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.icon}
+                {link.label}
+              </span>
+            </Link>
           </li>
         ))}
       </ul>
