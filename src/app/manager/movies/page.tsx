@@ -1,5 +1,6 @@
 'use client';
 import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
+import Spinner from '@/app/components/Spinner';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { PlusIcon, CheckCircledIcon, EyeOpenIcon, Pencil2Icon, TrashIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
@@ -104,7 +105,7 @@ export default function MoviesPage() {
         setUniqueGenres(genres);
       }
 
-      setLoading(false);
+      // setLoading(false);
     };
 
     fetchMovies();
@@ -245,7 +246,7 @@ export default function MoviesPage() {
 
       {/* Movies Table */}
       {loading ? (
-        <p>Loading movies...</p>
+        <Spinner />
       ) : (
         <Theme className="inline">
           <table className="min-w-full bg-white shadow-md rounded-lg border-collapse border overflow-hidden font-inter">
