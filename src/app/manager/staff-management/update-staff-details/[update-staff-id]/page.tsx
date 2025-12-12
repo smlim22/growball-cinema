@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 import { UUID } from 'crypto';
-import { NextResponse } from 'next/server';
+import Link from 'next/link';
 
 type Staff = {
     staff_id: number,
@@ -122,13 +122,13 @@ export default function UpdateStaffPage(){
             <Theme className='inline'>
                 <h1 className="text-2xl font-bold font-inter mb-4">Update Staff Details</h1>
                 <div className="bg-white p-6 rounded-lg shadow-md space-y-3">
-                    <a
+                    <Link
                         href="/manager/staff-management"
                         className="text-black hover:underline flex gap-1 items-center font-inter"
                         >
                         <ArrowLeftIcon />
                         Back
-                    </a>
+                    </Link>
 
                     <hr className="my-2 text-gray-300" />
 

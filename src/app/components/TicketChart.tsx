@@ -12,6 +12,7 @@ import {
   Legend,
 } from 'chart.js';
 import { supabase } from '@/app/lib/supabaseClient';
+import Spinner from '@/app/components/Spinner';
 
 ChartJS.register(
   CategoryScale,
@@ -231,7 +232,7 @@ export default function TicketChart({startDate, endDate} : TicketChartProps) {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-86 max-w-108">
-                <p>Loading chart data...</p>
+                <Spinner />
             </div>
         );
     }

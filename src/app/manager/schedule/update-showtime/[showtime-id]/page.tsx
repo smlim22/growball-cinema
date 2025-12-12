@@ -1,9 +1,11 @@
 "use client";
-import { Theme, Button, Callout, Spinner } from '@radix-ui/themes';
+import { Theme, Button, Callout } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
+import Spinner from '@/app/components/Spinner';
+import Link from 'next/link';
 
 type Movie = {
   movie_id: number;
@@ -207,8 +209,7 @@ export default function UpdateShowtimePage() {
         <div className="font-inter py-10 px-12">
           <Theme className="inline">
             <div className="flex items-center gap-3 text-gray-600">
-              <Spinner size="3" />
-              <span className="font-inter text-lg">Loading showtime...</span>
+              <Spinner />
             </div>
           </Theme>
         </div>
@@ -232,13 +233,13 @@ export default function UpdateShowtimePage() {
       <Theme className="inline">
         <h1 className="text-2xl font-bold mb-4 font-inter">Update Showtime</h1>
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <a
+          <Link
             href="/manager/schedule"
             className="text-black hover:underline mb-4 flex gap-1 items-center font-inter"
           >
             <ArrowLeftIcon />
             Back
-          </a>
+          </Link>
 
           <hr className="my-2 text-gray-300" />
 

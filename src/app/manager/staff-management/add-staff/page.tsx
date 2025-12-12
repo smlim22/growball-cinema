@@ -3,6 +3,7 @@ import { Theme, Button, Spinner } from '@radix-ui/themes';
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export  default function AddStaffPage(){
     const [staffName, setStaffName] = useState('');
@@ -69,13 +70,13 @@ export  default function AddStaffPage(){
             <Theme className='inline'>
                 <h1 className="text-2xl font-bold font-inter mb-4">Add New Staff</h1>
                 <div className="bg-white p-6 rounded-lg shadow-md space-y-3">
-                    <a
+                    <Link
                         href="/manager/staff-management"
                         className="text-black hover:underline flex gap-1 items-center font-inter"
                         >
                         <ArrowLeftIcon />
                         Back
-                    </a>
+                    </Link>
             
                     <hr className="my-2 text-gray-300" />
 

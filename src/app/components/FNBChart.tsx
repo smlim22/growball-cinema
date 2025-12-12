@@ -9,6 +9,7 @@ import {
   Title,
 } from 'chart.js';
 import { supabase } from '@/app/lib/supabaseClient';
+import Spinner from '@/app/components/Spinner';
 
 ChartJS.register(
   ArcElement,
@@ -158,7 +159,7 @@ export default function FNBChart({startDate, endDate} : FNBChartProps){
     if (loading) {
         return (
             <div className="flex items-center justify-center h-86 max-w-108">
-                <p>Loading chart data...</p>
+                <Spinner />
             </div>
         );
     }

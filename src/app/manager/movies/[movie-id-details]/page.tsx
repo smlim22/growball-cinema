@@ -4,6 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { Theme, Button, Callout, AlertDialog, Flex } from "@radix-ui/themes";
 import { ArrowLeftIcon, TrashIcon } from "@radix-ui/react-icons";
+import Spinner from '@/app/components/Spinner';
+import Link from 'next/link';
 
 type Movie = {
   movie_id: number;
@@ -133,7 +135,7 @@ export default function MovieDetailsPage() {
   };
 
   // Loading state
-  if (loading) return <p className="px-12 py-10">Loading...</p>;
+  if (loading) return <Spinner />;
 
   // Movie not found
   if (!movie) {
@@ -152,13 +154,13 @@ export default function MovieDetailsPage() {
       <h1 className="text-2xl font-bold mb-4">Movie Details</h1>
 
       <div className="bg-white p-6 rounded-lg shadow-md space-y-3">
-        <a
+        <Link
           href="/manager/movies"
           className="text-black hover:underline flex gap-1 items-center"
         >
           <ArrowLeftIcon />
           Back
-        </a>
+        </Link>
 
         <hr className="my-2 text-gray-300" />
 

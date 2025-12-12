@@ -4,6 +4,7 @@ import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { useEffect, useState, ChangeEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
+import Link from 'next/link';
 
 type Fnb = {
     fnb_id: number;
@@ -171,10 +172,10 @@ export default function UpdateFnbItemPage() {
         <div className="font-inter py-10 px-12">
             <h1 className='text-2xl font-bold font-inter mb-4'>Update F&B Item</h1>
             <div className="bg-white p-6 rounded-lg shadow-md">
-                <a href="/manager/fnb" className="text-black hover:underline mb-4 flex gap-1 items-center">
+                <Link href="/manager/fnb" className="text-black hover:underline mb-4 flex gap-1 items-center">
                     <ArrowLeftIcon />
                     Back
-                </a>
+                </Link>
 
                 <hr className="my-2 text-gray-300" />
 

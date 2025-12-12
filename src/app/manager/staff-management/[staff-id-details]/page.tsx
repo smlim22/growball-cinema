@@ -1,9 +1,11 @@
 'use client';
-import { Theme, Button, Callout, Spinner } from '@radix-ui/themes';
+import { Theme, Button, Callout } from '@radix-ui/themes';
 import { ArrowLeftIcon, CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useParams } from "next/navigation";
+import Spinner from '@/app/components/Spinner';
+import Link from 'next/link';
 
 type Staff = {
   staff_id: number;
@@ -131,8 +133,7 @@ export default function StaffDetailsPage() {
   if (loading) {
     return (
       <div className="py-10 px-12 flex flex-col items-center justify-center h-96">
-        <Spinner size="3" />
-        <p className="mt-3 text-gray-600 font-inter">Loading staff details...</p>
+        <Spinner />
       </div>
     );
   }
@@ -182,13 +183,13 @@ export default function StaffDetailsPage() {
         )}
 
         <div className="bg-white p-6 rounded-lg shadow-md space-y-3">
-          <a
+          <Link
             href="/manager/staff-management"
             className="text-black hover:underline flex gap-1 items-center font-inter"
           >
             <ArrowLeftIcon />
             Back
-          </a>
+          </Link>
 
           <hr className="my-2 text-gray-300" />
 

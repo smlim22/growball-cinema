@@ -4,6 +4,7 @@ import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
+import Link from 'next/link';
 
 type Movie = {
   movie_id: number;
@@ -200,10 +201,10 @@ export default function UpdateMoviePage(){
         <div className="py-10 px-12">
             <h1 className="text-2xl font-bold mb-4">Update Movie Details</h1>
             <div className='bg-white p-6 rounded-lg shadow-md'>
-                <a href="/manager/movies" className="text-black hover:underline mb-4 flex gap-1 items-center">
+                <Link href="/manager/movies" className="text-black hover:underline mb-4 flex gap-1 items-center">
                     <ArrowLeftIcon />
                     Back
-                </a>
+                </Link>
                 <hr className="my-2 text-gray-300" />
                 <Theme className="inline">
                     <form action="/manager/movies" className="grid grid-cols-2 space-y-4 gap-4 mt-6 font-inter" onSubmit={handleSubmit}>

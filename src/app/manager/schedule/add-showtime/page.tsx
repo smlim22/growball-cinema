@@ -5,6 +5,7 @@ import Form from 'next/form';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
+import Link from 'next/link';
 
 type Movie = {
   movie_id: number;
@@ -154,13 +155,13 @@ export default function AddShowtimePage() {
       <Theme className="inline">
         <h1 className="text-2xl font-bold font-inter mb-4">Add Showtime</h1>
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <a
+          <Link
             href="/manager/schedule"
             className="text-black hover:underline mb-4 flex gap-1 items-center font-inter"
           >
             <ArrowLeftIcon />
             Back
-          </a>
+          </Link>
           <hr className="my-2 text-gray-300" />
           {errors.general && (
             <p className="text-red-500 font-inter mb-2">{errors.general}</p>

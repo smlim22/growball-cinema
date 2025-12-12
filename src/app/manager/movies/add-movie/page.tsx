@@ -4,6 +4,7 @@ import { PlusIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
+import Link from 'next/link';
 
 export default function AddMoviePage() {
     const [movieName, setMovieName] = useState('');
@@ -131,10 +132,10 @@ export default function AddMoviePage() {
             <h1 className="text-2xl font-bold font-inter mb-4">Add Movie</h1>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
-                <a href="/manager/movies" className="text-black hover:underline mb-4 flex gap-1 items-center">
+                <Link href="/manager/movies" className="text-black hover:underline mb-4 flex gap-1 items-center">
                     <ArrowLeftIcon />
                     Back
-                </a>
+                </Link>
                 <hr className="my-2 text-gray-300" />
 
                 <Theme className="inline">

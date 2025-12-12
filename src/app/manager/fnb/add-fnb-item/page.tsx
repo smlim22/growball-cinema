@@ -5,6 +5,7 @@ import Form from 'next/form';
 import { useState, useEffect, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
+import Link from 'next/link';
 
 export default function AddFnbItemPage(){
     const [itemName, setItemName] = useState('');
@@ -107,10 +108,10 @@ export default function AddFnbItemPage(){
         <div className="font-inter py-10 px-12">
             <h1 className='text-2xl font-bold font-inter mb-4'>Add F&B Item</h1>
             <div className="bg-white p-6 rounded-lg shadow-md">
-                <a href="/manager/fnb" className="text-black hover:underline mb-4 flex gap-1 items-center">
+                <Link href="/manager/fnb" className="text-black hover:underline mb-4 flex gap-1 items-center">
                     <ArrowLeftIcon />
                     Back
-                </a>
+                </Link>
 
                 <hr className="my-2 text-gray-300" />
 
