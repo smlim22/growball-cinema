@@ -105,7 +105,7 @@ export default function MoviesPage() {
         setUniqueGenres(genres);
       }
 
-      // setLoading(false);
+      setLoading(false);
     };
 
     fetchMovies();
