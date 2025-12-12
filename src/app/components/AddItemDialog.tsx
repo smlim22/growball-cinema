@@ -34,45 +34,47 @@ export default function AddItemDialog({ open, onOpenChange, onAddItem }: AddItem
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
         {/* Overlay centered with Flexbox */}
-        <Dialog.Overlay className="bg-black/50 fixed inset-0 z-[100] flex items-center justify-center">
-          <Dialog.Content className="bg-white rounded-lg p-6 shadow-xl md:min-w-md relative z-[101]">
+        <Dialog.Overlay className="bg-black/50 fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <Dialog.Content className="bg-white rounded-lg shadow-xl md:min-w-md relative z-[101] max-h-[90vh] flex flex-col overflow-hidden">
             
             {/* Close Button (X) */}
             <Dialog.Close asChild>
               <button
                 onClick={() => setType(null)} // Also clear type manually if closed
-                className="absolute top-3 right-3 text-gray-500 hover:text-black transition"
+                className="absolute top-3 right-3 text-gray-500 hover:text-black transition z-10"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </Dialog.Close>
 
-            {/* Dialog Content */}
-            {!type ? (
-              <>
-                <Dialog.Title className="text-xl font-bold mb-4 text-center">
-                  Select Item Type
-                </Dialog.Title>
+            {/* Dialog Content - Scrollable */}
+            <div className="p-6 overflow-y-auto flex-1">
+              {!type ? (
+                <>
+                  <Dialog.Title className="text-xl font-bold mb-4 text-center">
+                    Select Item Type
+                  </Dialog.Title>
 
-                <Theme className="inline w-full">
-                  <Flex justify="center" gap="3">
-                    <Button color="amber" onClick={() => setType('ticket')}>
-                      <Ticket />
-                      Ticket
-                    </Button>
-                    <Button color="blue" onClick={() => setType('fnb')}>
-                      <Utensils />
-                      F&B
-                    </Button>
-                  </Flex>
-                </Theme>
-              </>
-            ) : type === 'ticket' ? (
-              <SelectTicketDialog onBack={() => setType(null)} onAddItem={handleAddItem} />
-            ) : (
-              <SelectFNBDialog onBack={() => setType(null)} onAddItem={handleAddItem} />
-            )}
+                  <Theme className="inline w-full">
+                    <Flex justify="center" gap="3">
+                      <Button color="amber" onClick={() => setType('ticket')}>
+                        <Ticket />
+                        Ticket
+                      </Button>
+                      <Button color="blue" onClick={() => setType('fnb')}>
+                        <Utensils />
+                        F&B
+                      </Button>
+                    </Flex>
+                  </Theme>
+                </>
+              ) : type === 'ticket' ? (
+                <SelectTicketDialog onBack={() => setType(null)} onAddItem={handleAddItem} />
+              ) : (
+                <SelectFNBDialog onBack={() => setType(null)} onAddItem={handleAddItem} />
+              )}
+            </div>
           </Dialog.Content>
         </Dialog.Overlay>
       </Dialog.Portal>
