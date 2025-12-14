@@ -35,9 +35,16 @@ export default function FNBStaffPage() {
 
     const formatTime = (timeStr: string) => {
         const [hours, minutes] = timeStr.split(":");
+        // Create a date object in UTC with today's date
         const date = new Date();
-        date.setHours(Number(hours), Number(minutes));
-        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+        date.setUTCHours(Number(hours), Number(minutes || 0), 0, 0);
+        // Format in Asia/Kuala_Lumpur timezone
+        return date.toLocaleTimeString("en-US", { 
+            hour: "2-digit", 
+            minute: "2-digit", 
+            hour12: true,
+            timeZone: "Asia/Kuala_Lumpur"
+        });
     };
 
     const fetchOrders = useCallback(async () => {

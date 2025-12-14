@@ -85,8 +85,8 @@ export async function processOrder(
         .from('order')
         .insert([
           {
-            order_date: orderDate,
-            order_time: orderTime,
+            // order_date: orderDate,
+            // order_time: orderTime,
             payment_method: paymentMethod,
             status: orderStatus,
             cust_id: null, // POS orders might not have a customer
