@@ -246,7 +246,7 @@ export async function generateTicketPDF(
   // Generate QR code data (ticket ID + order number + showtime ID)
   const qrData = JSON.stringify({
     ticketId,
-    orderNumber,
+    //orderNumber,
     showtimeId: item.showtimeId,
     movieName: item.name,
     seats: item.seats,
