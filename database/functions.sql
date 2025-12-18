@@ -17,3 +17,16 @@ AS $$
     -- And only update rows that need it
     AND status != 'Unavailable';
 $$;
+
+-- Automate to set the group booking status to 'inactive' after 30 minutes
+select
+  cron.schedule(
+    'expire_group_bookings_30min',
+    '*/1 * * * *', -- runs every 1 minute
+    $$
+    update GroupBooking
+    set status = 'inactive'
+    where status = 'active'
+    and created_at <= now() - interval '30 minutes';
+    $$
+  );
