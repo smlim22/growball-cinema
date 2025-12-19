@@ -160,7 +160,7 @@ serve(async (req) => {
           token: device.fcm_token,
           notification: {
             title: 'Order Ready!',
-            body: `Your Order ${order_id} is ready for pickup at the counter`,
+            body: `Your Order ID: ${order_id} is ready for pickup at the counter`,
           },
           data: {
             type: 'order_ready',
