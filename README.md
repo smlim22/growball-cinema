@@ -1,7 +1,7 @@
 ## Info
-This project uses Supabase cloud database and Node.js.
-Inside the database folder, you'll find the schema, function and triggers needed to ensure the project is fully operational.
-Enable 'pg_cron' extensions for function automation.
+<p>This project uses Supabase cloud database and Node.js.</p>
+<p>Inside the database folder, you'll find the schema, function and triggers needed to ensure the project is fully operational.</p>
+<p>Enable 'pg_cron' and 'http' extensions for function automation and edge function usage.</p>
 
 ## User Accounts
 If the supabase account is still alive, proceed with login with user accounts below
