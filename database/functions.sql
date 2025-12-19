@@ -1,4 +1,4 @@
--- Automated function
+-- Automated function for updating showtimes status
 CREATE OR REPLACE FUNCTION update_showtime_status()
 RETURNS void
 LANGUAGE sql
@@ -17,6 +17,16 @@ AS $$
     -- And only update rows that need it
     AND status != 'Unavailable';
 $$;
+
+select
+  cron.schedule(
+    'update-showtime-status-job',
+    '* * * * *',
+
+    $$
+      SELECT update_showtime_status();
+    $$
+  );
 
 -- Automate to set the group booking status to 'inactive' after 30 minutes
 select
