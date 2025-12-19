@@ -57,11 +57,13 @@ export default function FNBStaffPage() {
         }
 
         if (selectedSort === "Newest") {
-            query = query.order('order_date', { ascending: false });
+            query = query.order('order_date', { ascending: false })
+                        .order('order_time', { ascending: false });
         }
 
         if (selectedSort === "Oldest") {
-            query = query.order('order_date', { ascending: true });
+            query = query.order('order_date', { ascending: true })
+                        .order('order_time', { ascending: true });
         }
         
         const { data, error } = await query;
