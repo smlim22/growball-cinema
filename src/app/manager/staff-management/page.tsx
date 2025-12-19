@@ -4,6 +4,7 @@ import { PlusIcon, Pencil2Icon, EyeOpenIcon, CheckCircledIcon, MagnifyingGlassIc
 import { useEffect, useState } from 'react';
 import { supabase } from "@/app/lib/supabaseClient";
 import { useRouter, useSearchParams } from "next/navigation";
+import Spinner from '@/app/components/Spinner';
 
 type Staff = {
     staff_id: number,
@@ -27,6 +28,8 @@ export default function StaffManagementPage(){
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 10;
+
+    const [loading, setLoading] = useState(true);
 
     const getRoleName = (level: number) => {
         switch (level) {
@@ -63,6 +66,8 @@ export default function StaffManagementPage(){
             }else{
                 setStaff(data ?? []);
             }
+
+            setLoading(false);
         }
 
         fetchStaff();
@@ -194,7 +199,11 @@ export default function StaffManagementPage(){
                         </Button>
                     </div>
                 </div>
-
+                
+                {loading ? (
+                <Spinner />
+                ) : (
+                <>
                 <table className="min-w-full bg-white shadow-md rounded-lg border-collapse border overflow-hidden font-inter">
                     <thead className="bg-signature-red text-white">
                         <tr>
@@ -248,6 +257,7 @@ export default function StaffManagementPage(){
                         )}
                     </tbody>
                 </table>
+                </>)}
 
                 {staff.length > 0 && (
                     <div className="flex items-center justify-between mt-4 font-inter">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { PlusIcon, Pencil2Icon, CheckCircledIcon, EyeOpenIcon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from '@/app/lib/supabaseClient';
+import Spinner from '@/app/components/Spinner';
 
 // Updated type to allow 'movie' to be null, fixing the TypeScript error
 type Showtime = {
@@ -29,6 +30,7 @@ export default function SchedulePage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("earliest");
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
 
@@ -74,6 +76,8 @@ export default function SchedulePage() {
     if (!startDate || !endDate) return;
 
     const fetchShowtime = async () => {
+      //setLoading(true);
+      
       // Start building the query
       let query = supabase
         .from("showtimes")
@@ -99,6 +103,8 @@ export default function SchedulePage() {
         setShowtimes(data ?? []);
         setCurrentPage(1); // Reset to first page when filters change
       }
+      
+      setLoading(false);
     };
 
     fetchShowtime();
@@ -193,6 +199,10 @@ export default function SchedulePage() {
           </Callout.Root>
         )}
 
+        {loading ? (
+          <Spinner />
+        ) : (
+        <>
         {/* Filters (no change) */}
         <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3 font-inter">
           {/* Hall filter */}
@@ -347,6 +357,8 @@ export default function SchedulePage() {
               </Button>
             </div>
           </div>
+        )}
+        </>
         )}
       </Theme>
     </div>

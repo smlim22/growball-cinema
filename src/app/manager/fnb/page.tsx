@@ -4,6 +4,7 @@ import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { PlusIcon, CheckCircledIcon, Pencil2Icon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
+import Spinner from '@/app/components/Spinner';
 
 type Fnb = {
     fnb_id: number;
@@ -21,6 +22,7 @@ export default function FnbPage(){
     const [availableTypes, setAvailableTypes] = useState<string[]>(["Food", "Beverages"]);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 10;
+    const [loading, setLoading] = useState(true);
 
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
@@ -40,6 +42,8 @@ export default function FnbPage(){
                 setFnbItems(data ?? []);
                 setFilteredFnbItems(data ?? []);
             }
+
+            setLoading(false)
         }
         fetchFnbItems();
     }, [])
@@ -133,7 +137,7 @@ export default function FnbPage(){
                         <Callout.Text className='font-inter'>F&B item updated successfully!</Callout.Text>
                     </Callout.Root>
                 )}
-
+                
                 <div className="flex flex-wrap items-center bg-white shadow-sm rounded-lg p-4 mb-5 gap-3">
                     <div className="relative flex-1 min-w-[220px]">
                         <MagnifyingGlassIcon className="absolute left-3 top-3 text-gray-500" />
@@ -166,7 +170,11 @@ export default function FnbPage(){
                         Clear Filter
                     </Button>
                 </div>
-
+                
+                {loading ? (
+                    <Spinner />
+                ) : (
+                <>
                 <table className="min-w-full bg-white shadow-md rounded-lg border-collapse border overflow-hidden font-inter">
                     <thead className="bg-signature-red text-white">
                         <tr>
@@ -209,6 +217,8 @@ export default function FnbPage(){
                         )}
                     </tbody>
                 </table>
+                </>
+                )}
                 {/* Pagination Controls */}
                 {fnbItems.length > 0 && (
                 <div className="flex items-center justify-between mt-4 font-inter">

@@ -76,7 +76,10 @@ export default function AddFnbItemPage(){
 
         setErrors(newErrors);
 
-        if (Object.keys(newErrors).length > 0) return;
+        if (Object.keys(newErrors).length > 0) {
+            setLoading(false);
+            return;
+        }
 
         const {error} = await supabase
             .from("fnb")

@@ -1,10 +1,11 @@
 'use client';
-import { Theme, Button, Callout, Spinner } from '@radix-ui/themes';
+import { Theme, Button, Callout, Spinner as Sp } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 import Link from 'next/link';
+import Spinner from '@/app/components/Spinner';
 
 type Movie = {
   movie_id: number;
@@ -169,13 +170,7 @@ export default function UpdateMoviePage(){
     // Show loading state while fetching
     if (fetching) {
         return (
-            <div className="py-10 px-12">
-                <Theme className="inline">
-                    <div className="flex items-center justify-center">
-                        <Spinner size="3" />
-                    </div>
-                </Theme>
-            </div>
+            <Spinner/>
         );
     }
 
@@ -326,7 +321,7 @@ export default function UpdateMoviePage(){
                             <Button color="green" size="2" variant="solid" type="submit" disabled={loading}>
                                 {loading ? (
                                     <>
-                                        <Spinner/>
+                                        <Sp/>
                                         Updating...
                                     </>
                                 ) : (

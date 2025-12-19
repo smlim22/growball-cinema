@@ -1,5 +1,5 @@
 "use client";
-import { Theme, Button } from '@radix-ui/themes';
+import { Theme, Button, Spinner } from '@radix-ui/themes';
 import { ArrowLeftIcon, PlusIcon } from "@radix-ui/react-icons";
 import Form from 'next/form';
 import { useState, useEffect } from 'react';
@@ -30,6 +30,7 @@ export default function AddShowtimePage() {
   const [seniorPrice, setSeniorPrice] = useState('0.00');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -59,6 +60,8 @@ export default function AddShowtimePage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const newErrors: { [key: string]: string } = {};
 
     if (!selectedMovie) newErrors.selectedMovie = "*Required field";
@@ -70,7 +73,10 @@ export default function AddShowtimePage() {
     if (!seniorPrice || isNaN(parseFloat(seniorPrice)) || parseFloat(seniorPrice) == 0) newErrors.seniorPrice = "*Invalid senior price";
 
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (Object.keys(newErrors).length > 0) {
+      setIsLoading(false);
+      return;
+    }
 
     const malaysiaTime = timeWithMalaysiaOffset(time);
     if (!malaysiaTime) {
@@ -140,6 +146,7 @@ export default function AddShowtimePage() {
     if (error) {
       console.error("Error adding showtime:", error);
       setErrors({ general: "*Error adding showtime. Please try again." });
+      setIsLoading(false);
     } else {
       router.push("/manager/schedule?success=1");
     }
@@ -292,9 +299,18 @@ export default function AddShowtimePage() {
             </div>
 
             <div className="flex items-end justify-self-end">
-              <Button color="green" size="2" variant="solid" type="submit">
-                <PlusIcon />
-                Add Showtime
+              <Button color="green" size="2" variant="solid" type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Spinner />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <PlusIcon />
+                    Add Showtime
+                  </>
+                )}
               </Button>
             </div>
           </form>

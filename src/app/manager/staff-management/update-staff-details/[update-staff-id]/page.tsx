@@ -1,11 +1,12 @@
 'use client';
-import { Theme, Button, Spinner, Callout } from '@radix-ui/themes';
+import { Theme, Button, Spinner as Sp, Callout } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 import { UUID } from 'crypto';
 import Link from 'next/link';
+import Spinner from '@/app/components/Spinner';
 
 type Staff = {
     staff_id: number,
@@ -21,9 +22,10 @@ export default function UpdateStaffPage(){
     const params = useParams();
     const staffId = params['update-staff-id'];
     const [staffDetails, setStaffDetails] = useState<Staff | null>(null)
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
 
     const [staffName, setStaffName] = useState('');
     const [staffEmail, setStaffEmail] = useState('');
@@ -44,12 +46,12 @@ export default function UpdateStaffPage(){
             }else{
                 setStaffDetails(data ?? null)
             }
-            setLoading(false);
             setStaffName(data?.staff_name || '');
             setStaffEmail(data?.staff_email || '');
             setStaffPhoneNo(data?.staff_phoneNo || '');
             setStaffRole(data?.access_level);
             setUUID(data?.uuid);
+            setIsLoading(false);
         };
         fetchStaff();
     }, [staffId])
@@ -100,6 +102,10 @@ export default function UpdateStaffPage(){
         } finally {
             setLoading(false);
         }
+    }
+
+    if(isLoading){
+        return <Spinner/>
     }
 
     if (!staffDetails) {
@@ -206,7 +212,7 @@ export default function UpdateStaffPage(){
                             >
                                 {loading ? (
                                 <>
-                                    <Spinner /> <span className="ml-2">Adding...</span>
+                                    <Sp /> <span className="ml-2">Adding...</span>
                                 </>
                                 ) : (
                                 <>

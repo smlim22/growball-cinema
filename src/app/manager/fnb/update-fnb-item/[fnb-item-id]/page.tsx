@@ -1,10 +1,11 @@
 'use client';
-import { Theme, Button, Callout, Spinner } from '@radix-ui/themes';
+import { Theme, Button, Callout, Spinner as Sp } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { useEffect, useState, ChangeEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabaseClient';
 import Link from 'next/link';
+import Spinner from '@/app/components/Spinner';
 
 type Fnb = {
     fnb_id: number;
@@ -146,14 +147,7 @@ export default function UpdateFnbItemPage() {
     // Loading state
     if (loading) {
         return (
-            <div className="font-inter py-10 px-12">
-                <Theme className="inline">
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <Spinner size="3" />
-                        <span className="font-inter text-lg">Loading F&B item...</span>
-                    </div>
-                </Theme>
-            </div>
+            <Spinner/>
         );
     }
 
@@ -261,7 +255,7 @@ export default function UpdateFnbItemPage() {
                             <Button color="green" size="2" variant="solid" type="submit" disabled={submitting}>
                                 {submitting ? (
                                     <>
-                                        <Spinner size="1" /> Updating...
+                                        <Sp size="1" /> Updating...
                                     </>
                                 ) : (
                                     <>
