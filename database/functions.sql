@@ -22,11 +22,11 @@ $$;
 select
   cron.schedule(
     'expire_group_bookings_30min',
-    '*/1 * * * *', -- runs every 1 minute
+    '* * * * *', -- runs every minute
     $$
-    update GroupBooking
+    update group_booking
     set status = 'inactive'
     where status = 'active'
-    and created_at <= now() - interval '30 minutes';
+      and created_at <= now() - interval '30 minutes';
     $$
   );
