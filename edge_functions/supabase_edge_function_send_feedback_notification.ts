@@ -150,7 +150,7 @@ serve(async (req) => {
           token: tokenData.fcm_token,
           notification: {
             title: 'Share Your Feedback',
-            body: `How was ${movie_name}? We'd love your feedback!`,
+            body: `How was ${movie_name} your cinema experience? We'd love your feedback!`,
           },
           data: {
             type: 'feedback_request',
