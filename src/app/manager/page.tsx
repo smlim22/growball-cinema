@@ -14,6 +14,7 @@ export default function ManagerPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [noOfShowtimes, setNoOfShowtimes] = useState<number>(0);
+  const [noOfComplaints, setNoOfComplaints] = useState<number>(0);
   const today = new Date().toISOString().split("T")[0];
   const [startDateTicket, setStartDateTicket] = useState<string>("");
   const [endDateTicket, setEndDateTicket] = useState<string>("");
@@ -62,6 +63,21 @@ export default function ManagerPage() {
     }
 
     countShowtimes();
+  });
+
+  useEffect(() => {
+    const countComplaints = async () => {
+      const { count, error } = await supabase.from("complaint")
+        .select("*", { count: 'exact', head: true })
+        .eq("date", today);
+      
+      if (error) {
+        console.error("Error counting complaints:", error);
+        return;
+      }
+      setNoOfComplaints(count ?? 0)
+    }
+    countComplaints();
   });
 
   useEffect(() => {
@@ -141,7 +157,7 @@ export default function ManagerPage() {
             />  
           </h2>
           <div className="text-3xl font-semibold text-center">
-            0
+            {noOfComplaints}
           </div>
         </div>
       </div>

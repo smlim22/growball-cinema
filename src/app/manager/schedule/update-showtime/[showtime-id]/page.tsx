@@ -1,5 +1,5 @@
 "use client";
-import { Theme, Button, Callout } from '@radix-ui/themes';
+import { Theme, Button, Callout, Spinner as Sp } from '@radix-ui/themes';
 import { ArrowLeftIcon, ArchiveIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -46,6 +46,7 @@ export default function UpdateShowtimePage() {
   const [status, setStatus] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter();
 
   // Fetch current showtime
@@ -113,6 +114,7 @@ export default function UpdateShowtimePage() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     const newErrors: { [key: string]: string } = {};
 
     if (!selectedMovie) newErrors.selectedMovie = "*Required field";
@@ -125,7 +127,10 @@ export default function UpdateShowtimePage() {
     if (seniorPrice === undefined || isNaN(seniorPrice) || seniorPrice === 0) newErrors.seniorPrice = "*Invalid senior price";
 
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (Object.keys(newErrors).length > 0) {
+      setIsLoading(false);
+      return;
+    }
 
     const malaysiaTime = timeWithMalaysiaOffset(time);
     if (!malaysiaTime) {
@@ -193,6 +198,7 @@ export default function UpdateShowtimePage() {
     if (error) {
       console.error("Error updating showtime:", error);
       setErrors({ general: "*Error updating showtime. Please try again." });
+      setIsLoading(false);
     } else {
       router.push("/manager/schedule?updated=1");
     }
@@ -206,13 +212,7 @@ export default function UpdateShowtimePage() {
     // Loading state
     if (loading) {
       return (
-        <div className="font-inter py-10 px-12">
-          <Theme className="inline">
-            <div className="flex items-center gap-3 text-gray-600">
-              <Spinner />
-            </div>
-          </Theme>
-        </div>
+        <Spinner/>
       );
     }
 
@@ -395,9 +395,19 @@ export default function UpdateShowtimePage() {
             <div></div>
 
             <div className="flex justify-self-end items-end">
-              <Button color="green" size="2" variant="solid" type="submit">
-                <ArchiveIcon />
-                Update Showtime
+              <Button color="green" size="2" variant="solid" type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Sp/>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <ArchiveIcon />
+                    Update Showtime
+                  </>
+                )}
+                
               </Button>
             </div>
           </form>
