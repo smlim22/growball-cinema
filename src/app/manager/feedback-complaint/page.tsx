@@ -423,6 +423,7 @@ export default function FeedbackComplaintPage(){
                                                     size="2"
                                                     variant="solid"
                                                     onClick={() => openReplyDialog(complaint)}
+                                                    disabled={complaint.status == "Resolved" ? true : false}
                                                 >
                                                     <ChatBubbleIcon />
                                                     Reply

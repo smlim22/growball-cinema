@@ -2,9 +2,10 @@
 import { Theme, Button, Flex, Callout } from '@radix-ui/themes';
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
-import { EyeOpenIcon, CheckCircledIcon } from '@radix-ui/react-icons';
+import { EyeOpenIcon, CheckCircledIcon, ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import ViewOrderDialog from '@/app/components/ViewOrderDialog';
+import Spinner from '@/app/components/Spinner';
 //import UpdateOrderDialog from '@/app/components/UpdateOrderDialog';
 
 type Order = {
@@ -25,6 +26,9 @@ export default function FNBStaffPage() {
     //const [showUpdateDialog, setShowUpdateDialog] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [showFailMessage, setShowFailMessage] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
 
     // Format date (DD/MM/YYYY) and time (hh:mm AM/PM)
@@ -74,11 +78,60 @@ export default function FNBStaffPage() {
         } else {
             setOrders(data ?? []);
         }
+        setLoading(false);
     }, [selectedStatus, selectedSort]);
 
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedStatus, selectedSort]);
+
+    // Pagination logic
+    const totalPages = Math.ceil(orders.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentOrders = orders.slice(startIndex, endIndex);
+
+    // Generate page numbers to display
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+        
+        if (totalPages <= maxVisiblePages) {
+            // Show all pages if total is less than max visible
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Show first page
+            pages.push(1);
+            
+            if (currentPage > 3) {
+                pages.push('...');
+            }
+            
+            // Show pages around current page
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+            
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+            
+            if (currentPage < totalPages - 2) {
+                pages.push('...');
+            }
+            
+            // Show last page
+            pages.push(totalPages);
+        }
+        
+        return pages;
+    };
 
     // const handleUpdateSuccess = useCallback(() => {
     //     fetchOrders();
@@ -132,6 +185,10 @@ export default function FNBStaffPage() {
         } else {
             handleUpdateSuccess();
         }
+    }
+
+    if (loading) {
+        return <Spinner />;
     }
 
     return (
@@ -192,13 +249,25 @@ export default function FNBStaffPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {orders.length > 0 ? (
-                            orders.map((order) => (
+                        {currentOrders.length > 0 ? (
+                            currentOrders.map((order) => (
                             <tr key={order.order_id} className="border-t border-gray-200 hover:bg-gray-50">
                                 <td className="py-3 px-6">{order.order_id}</td>
                                 <td className="py-3 px-6">{formatDate(order.order_date)}</td>
                                 <td className="py-3 px-6">{formatTime(order.order_time)}</td>
-                                <td className="py-3 px-6">{order.status}</td>
+                                <td className="py-3 px-6">
+                                <span className={`px-2 py-1 rounded-full text-sm font-semibold ${
+                                    order.status === "Completed" 
+                                        ? "bg-green-100 text-green-800" 
+                                        : order.status === "Pending"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : order.status === "Ready For Pickup"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800"
+                                }`}>
+                                    {order.status}
+                                </span>
+                                </td>
                                 <td className="py-3 px-6">
                                     <Flex gap="2">
                                         <Button 
@@ -238,6 +307,56 @@ export default function FNBStaffPage() {
                         )}
                     </tbody>
                 </table>
+
+                {/* Pagination Controls */}
+                {orders.length > 0 && (
+                    <div className="flex items-center justify-between mt-4 font-inter">
+                        <div className="text-sm text-gray-600">
+                            Showing {startIndex + 1} to {Math.min(endIndex, orders.length)} of {orders.length} orders
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                color="gray"
+                                variant="soft"
+                                size="2"
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeftIcon />
+                                Previous
+                            </Button>
+                            
+                            <div className="flex items-center gap-1">
+                                {getPageNumbers().map((page, index) => (
+                                    page === '...' ? (
+                                        <span key={`ellipsis-${index}`} className="px-2 text-gray-500">...</span>
+                                    ) : (
+                                        <Button
+                                            key={page}
+                                            color={currentPage === page ? "blue" : "gray"}
+                                            variant={currentPage === page ? "solid" : "soft"}
+                                            size="2"
+                                            onClick={() => setCurrentPage(page as number)}
+                                        >
+                                            {page}
+                                        </Button>
+                                    )
+                                ))}
+                            </div>
+                            
+                            <Button
+                                color="gray"
+                                variant="soft"
+                                size="2"
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next
+                                <ChevronRightIcon />
+                            </Button>
+                        </div>
+                    </div>
+                )}
 
                 <ViewOrderDialog
                     open={showViewDialog}
