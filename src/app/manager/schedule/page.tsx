@@ -261,7 +261,7 @@ export default function SchedulePage() {
               <th className="border border-signature-red py-3 px-6 text-left">Date</th>
               <th className="border border-signature-red py-3 px-6 text-left">Time</th>
               <th className="border border-signature-red py-3 px-6 text-left">Movie Name</th>
-              {/* <th className="border border-signature-red py-3 px-6 text-left">Status</th> */}
+              <th className="border border-signature-red py-3 px-6 text-left">Status</th>
               <th className="border border-signature-red py-3 px-6 text-left">Actions</th>
             </tr>
           </thead>
@@ -272,7 +272,7 @@ export default function SchedulePage() {
                   <td className="py-3 px-6">{formatDate(showtime.date)}</td>
                   <td className="py-3 px-6">{formatTime(showtime.time)}</td>
                   <td className="py-3 px-6">{showtime.movie?.movie_name}</td>
-                  {/* <td className="py-3 px-6">{showtime.status}</td> */}
+                  <td className="py-3 px-6">{showtime.status}</td>
                   <td className="py-3 px-6">
                     <Flex gap="2">
                       <Button
