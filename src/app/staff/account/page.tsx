@@ -3,6 +3,7 @@ import { supabase } from "@/app/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { Theme, Button, Callout } from "@radix-ui/themes";
 import { EyeOpenIcon, EyeClosedIcon, CheckCircledIcon } from "@radix-ui/react-icons";
+import Spinner from '@/app/components/Spinner';
 
 type Staff = {
     staff_id: number,
@@ -28,6 +29,7 @@ export default function AccountPage() {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -47,6 +49,7 @@ export default function AccountPage() {
                 setStaffDetails(data);
                 setPhoneNo(data.staff_phoneNo);
             }
+            setLoading(false);
         }
         checkAuth();
     }, []);
@@ -138,6 +141,11 @@ export default function AccountPage() {
 
         setPasswordForm(false);
     };
+
+    if (loading) {
+        return <Spinner />;
+    }
+
 
     return (
         <div className="py-10 px-12 font-inter">
