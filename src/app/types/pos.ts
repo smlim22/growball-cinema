@@ -22,6 +22,8 @@ export interface CartItem {
     senior: number;
     child: number;
   };
+  hallId?: number;
+  hallType?: string;
   
   // F&B specific fields
   fnbId?: number;

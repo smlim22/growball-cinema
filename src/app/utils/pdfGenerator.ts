@@ -204,6 +204,12 @@ export async function generateTicketPDF(
     yPos += 6;
   }
 
+  // Cinema Hall
+  if (item.hallType) {
+    doc.text(`Hall: ${item.hallType}`, margin, yPos);
+    yPos += 6;
+  }
+
   // Seats
   if (item.seats && item.seats.length > 0) {
     doc.text(`Seats: ${item.seats.join(', ')}`, margin, yPos);

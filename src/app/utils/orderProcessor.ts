@@ -156,11 +156,11 @@ export async function processOrder(
       ticketIds.push(ticketId);
 
       // Create seat_taken entries for each seat
-      if (ticketItem.seats && ticketItem.seats.length > 0) {
+      if (ticketItem.seats && ticketItem.seats.length > 0 && ticketItem.hallId) {
         const seatTakenEntries = ticketItem.seats.map(seatNo => ({
           seat_no: seatNo,
+          hall_id: ticketItem.hallId,
           ticket_id: ticketId,
-          // showtime_id: ticketItem.showtimeId, // Include showtime_id if table supports it
           date: ticketItem.showtime?.date || orderDate,
           status: 'booked',
         }));
@@ -171,21 +171,6 @@ export async function processOrder(
 
         if (seatTakenError) {
           console.error('Error creating seat_taken entries:', seatTakenError);
-          // Try without showtime_id if it fails (in case table doesn't have that column)
-          const seatTakenEntriesWithoutShowtime = ticketItem.seats.map(seatNo => ({
-            seat_no: seatNo,
-            ticket_id: ticketId,
-            date: ticketItem.showtime?.date || orderDate,
-            status: 'booked',
-          }));
-
-          const { error: retryError } = await supabase
-            .from('seat_taken')
-            .insert(seatTakenEntriesWithoutShowtime);
-
-          if (retryError) {
-            console.error('Error creating seat_taken entries (retry):', retryError);
-          }
         }
       }
     }

@@ -42,10 +42,10 @@ export default function SelectTicketDialog({ onBack, onAddItem }: SelectTicketDi
 
   const fetchSeats = async (showtime_id: number) => {
     try {
-      // Step 1: Get the showtime to retrieve hall_id
+      // Step 1: Get the showtime to retrieve hall_id and hall_type
       const { data: showtimeData, error: showtimeError } = await supabase
         .from('showtimes')
-        .select('hall_id')
+        .select('hall_id, cinema_hall(hall_type)')
         .eq('showtime_id', showtime_id)
         .single();
 
@@ -159,6 +159,8 @@ export default function SelectTicketDialog({ onBack, onAddItem }: SelectTicketDi
         senior: seniorQty,
         child: childQty,
       },
+      hallId: selectedShowtime.hall_id,
+      hallType: selectedShowtime.cinema_hall?.hall_type || '2D',
     };
 
     // Pass as array for consistency
