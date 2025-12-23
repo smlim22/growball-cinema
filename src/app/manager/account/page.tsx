@@ -140,6 +140,10 @@ export default function AccountPage() {
         setSuccess(true);
 
         setPasswordForm(false);
+
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
     };
 
     if (loading) {
