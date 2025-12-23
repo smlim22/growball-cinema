@@ -114,7 +114,7 @@ export default function MovieDetailsPage() {
 
     if (movieError) {
       console.error("Error deleting movie:", movieError.message);
-      setError("Failed to delete movie. Please try again.");
+      setError("Failed to delete movie. This movie already has at least one showtime");
       setIsDeleting(false);
       return;
     }
