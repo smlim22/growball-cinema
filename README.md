@@ -2,6 +2,12 @@
 <p>This project uses Supabase cloud database and Node.js.</p>
 <p>Inside the database folder, you'll find the schema, function and triggers needed to ensure the project is fully operational.</p>
 <p>Enable 'pg_cron' and 'http' extensions for function automation and edge function usage.</p>
+<p>To run this, project use 'npm run dev'. Ensure you have Node.js installed</p>
+
+## Supabase
+<p>In case you need to load into your own database, run all the SQL files in the database folder on the Supabase SQL editor (Must have Supabase account and project created)</p>
+<p>Edge functions are necessary for the functions to work</p>
+<p>Replace the API keys and create your own storage bucket</p>
 
 ## User Accounts
 If the supabase account is still alive, proceed with login with user accounts below
