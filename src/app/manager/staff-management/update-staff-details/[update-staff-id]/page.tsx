@@ -217,7 +217,7 @@ export default function UpdateStaffPage(){
                                 ) : (
                                 <>
                                     <ArchiveIcon />
-                                    Add New Staff
+                                    Update Staff Details
                                 </>
                                 )}
                             </Button>
