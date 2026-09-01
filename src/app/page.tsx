@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { loginWithEmail, getUserAccessLevel } from './lib/auth'
+import { loginWithEmail, getUserStaffInfo, logout } from './lib/auth'
 import Image from 'next/image'
 import { EyeOpenIcon, EyeClosedIcon } from "@radix-ui/react-icons";
 
@@ -27,14 +27,27 @@ export default function LoginPage() {
         return
       }
 
-      const accessLevel = await getUserAccessLevel()
+      const staffInfo = await getUserStaffInfo()
 
-      if (accessLevel === 2) {
+      if (!staffInfo) {
+        await logout()
+        setError('Error occured.')
+        return
+      }
+
+      if (staffInfo.status !== 'Active') {
+        await logout()
+        setError('Your account is inactive. Please contact the manager.')
+        return
+      }
+
+      if (staffInfo.access_level === 2) {
         router.push('/manager')
-      } else if (accessLevel === 1) {
+      } else if (staffInfo.access_level === 1) {
         router.push('/staff')
       } else {
-        setError('No access level found for this account')
+        await logout()
+        setError('Only staff members are authorized!')
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unexpected error'
